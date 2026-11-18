@@ -300,7 +300,7 @@ drag($("ge"),8,(x,y)=>{snap();gv=!(art.glyphs[brush.glyph][y]>>(7-x)&1);setPx(x,
 for(const c of [$("gc"),$("go")])c.addEventListener("pointerdown",e=>{const[x,y]=cellAt(c,e,8);brush.glyph=y*8+x;tileTool();buildTools();refresh()});
 
 /* ---------- UI ---------- */
-function draw(){const P=art.palette,fg=P[brush.fg],bg=P[brush.bg];
+function draw(){autosave();const P=art.palette,fg=P[brush.fg],bg=P[brush.bg];
  const X=$("bd").getContext("2d");renderArt(X,flat(),8,showGrid);
  const r=g&&(g.m==="select"||g.m==="add")?[Math.min(g.x,g.x1),Math.min(g.y,g.y1),Math.abs(g.x-g.x1)+1,Math.abs(g.y-g.y1)+1]:null;
  if(r||sel)for(const[col,lw,d]of[["#000",6,[]],["#ffc233",3,[10,6]]]){X.strokeStyle=col;X.lineWidth=lw;X.setLineDash(d);
@@ -348,7 +348,7 @@ function setPal(i,c){soft("p"+i);art.palette[i]=c;pin[i][0].style.background=c;p
 $("cgrid").onclick=e=>{const b=e.target.closest("button");if(b)setPal(cpi,b.dataset.c)};
 $("cx").onclick=()=>$("cp").hidden=true;$("cp").onclick=e=>{if(e.target===$("cp"))$("cp").hidden=true};
 MF.forEach(k=>{const l=document.createElement("label"),i=document.createElement("input");l.className="mf";l.append(k[0].toUpperCase()+k.slice(1),i);
- i.id="m_"+k;i.type=k==="date"?"date":"text";i.oninput=()=>{soft("m"+k);art.metadata[k]=i.value};$("meta").append(l)});
+ i.id="m_"+k;i.type=k==="date"?"date":"text";i.oninput=()=>{soft("m"+k);art.metadata[k]=i.value;autosave()};$("meta").append(l)});
 function refresh(sync){swatches();draw();$("un").disabled=!undo.length;$("re").disabled=!redo.length;$("gn").textContent="#"+brush.glyph;$("selbar").hidden=!sel;$("selt").className=trans?"on":"";document.querySelectorAll("#modes [data-m]").forEach(b=>b.className=b.dataset.m===mode?"on":"");$("sf").style.opacity=$("sb").style.opacity=mode==="char"?.4:1;$("gc").style.opacity=mode==="colour"?.4:1;
  if(sync){pin.forEach(([i,h],k)=>{i.style.background=art.palette[k];h.textContent=art.palette[k]});MF.forEach(k=>$("m_"+k).value=art.metadata[k])}}
 function tab(w){$("vC").classList.toggle("on",!w);$("vW").classList.toggle("on",w);$("tC").className=w?"":"on";$("tW").className=w?"on":"";refresh()}
@@ -412,5 +412,23 @@ addEventListener("keydown",e=>{
  if(k==="m")return go(()=>{mode=MODES[mode];refresh();say("Mode: "+mode)});
  if(!sel)return;
  if(k==="c")return go(copySel);if(k==="t")return click("selt");if(del)return go(delSel)});
-buildTools();refresh(true);
+/* ---------- autosave: the whole working state goes to localStorage a moment after every change and when the page is hidden; undo history is not kept ---------- */
+const KEY="tilecart:autosave:1",TOOLS=["paint","fill","replace","pick","erase"],MODE_NAMES=["char","colour","both"];
+let asT,asWarned=false;
+function autosave(){clearTimeout(asT);asT=setTimeout(saveState,400)}
+function saveState(){clearTimeout(asT);try{localStorage.setItem(KEY,JSON.stringify({v:1,art,brush:{...brush},mode,showGrid,trans,sel,clip,sclip,w:$("vW").classList.contains("on")}))}catch(e){if(!asWarned){asWarned=true;say("Autosave is unavailable in this browser",1)}}}
+const okI=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi,okC=c=>!!c&&okI(c.glyph,0,63)&&okI(c.fg,0,2)&&okI(c.bg,0,2),okG=q=>Array.isArray(q)&&q.length===8&&q.every(r=>okI(r,0,255)),
+ okS=z=>!!z&&okI(z.w,1,8)&&okI(z.h,1,8)&&Array.isArray(z.cells)&&z.cells.length===z.w*z.h&&z.cells.every(c=>c===null||okC(c)),cp=c=>c&&{glyph:c.glyph,fg:c.fg,bg:c.bg};
+function restoreState(){try{const st=JSON.parse(localStorage.getItem(KEY)),a=st&&st.art;if(!st||st.v!==1||!a)return false;
+ if(!(Array.isArray(a.palette)&&a.palette.length===3&&a.palette.every(c=>/^#[0-9a-f]{6}$/i.test(c))&&Array.isArray(a.glyphs)&&a.glyphs.length===64&&a.glyphs.every(okG)&&Array.isArray(a.map)&&a.map.length===64&&a.map.every(okC)&&a.metadata&&typeof a.metadata==="object"))return false;
+ const md={};MF.forEach(k=>md[k]=typeof a.metadata[k]==="string"?a.metadata[k].slice(0,200):"");
+ art={...def(),palette:a.palette.map(c=>c.toLowerCase()),glyphs:a.glyphs.map(q=>[...q]),map:a.map.map(cp),metadata:md};
+ const b=st.brush||{};if(okI(b.glyph,0,63))brush.glyph=b.glyph;if(okI(b.fg,0,2))brush.fg=b.fg;if(okI(b.bg,0,2))brush.bg=b.bg;if(TOOLS.includes(b.tool))brush.tool=b.tool;
+ if(MODE_NAMES.includes(st.mode))mode=st.mode;if(typeof st.showGrid==="boolean")showGrid=st.showGrid;if(typeof st.trans==="boolean")trans=st.trans;
+ clip=okG(st.clip)?[...st.clip]:null;sclip=okS(st.sclip)?{w:st.sclip.w,h:st.sclip.h,cells:st.sclip.cells.map(cp)}:null;
+ const z=st.sel;sel=okS(z)&&okI(z.x,-8,8)&&okI(z.y,-8,8)?{x:z.x,y:z.y,w:z.w,h:z.h,cells:z.cells.map(cp)}:null;
+ return !!st.w}catch(e){return false}}
+addEventListener("pagehide",saveState);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveState()});
+const startW=restoreState();
+buildTools();refresh(true);if(startW)tab(1);
 </script></body></html>
