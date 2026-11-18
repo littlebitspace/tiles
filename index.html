@@ -50,33 +50,72 @@ summary{list-style:none}summary::-webkit-details-marker{display:none}
 summary::before{content:"+ ";color:var(--ac)}details[open]>summary::before{content:"- "}
 #msg{padding:4px 8px;min-height:26px}
 button u{text-underline-offset:2px}
+button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.ic{width:24px;height:24px;display:block;fill:currentColor;shape-rendering:crispEdges;pointer-events:none}
+#tip{position:fixed;z-index:50;background:#000;color:#fff;border:2px solid var(--ac,#fff);padding:3px 8px;font-size:13px;max-width:260px;pointer-events:none}
+/* canvas view: board over glyph sheet on the left, one vertical stack of grouped controls on the right */
+:root{--bs:min(calc(100vw - 124px),38dvh)}
+#cv{display:grid;gap:8px;justify-content:center;align-items:start;grid-template-columns:var(--bs) 92px;grid-template-areas:"bd rc" "gc rc"}
+#cv #bd,#cv #gc{width:var(--bs);height:var(--bs);margin:0}#bd{grid-area:bd}#gc{grid-area:gc}#rc{grid-area:rc}
+#rc,#wc{display:flex;flex-direction:column;gap:8px}
+#rc>*+*,#wc>*+*{border-top:3px dotted var(--ln);padding-top:8px}
+.grp{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0}
+#rc button,#wc button{min-height:40px;padding:2px;box-shadow:inset -2px -2px 0 rgba(0,0,0,.35),inset 2px 2px 0 rgba(255,255,255,.18)}
+#rc .ic,#wc .ic{margin:auto}
+.cl{font-size:12px;margin:0 0 2px}
+#rc .sw{margin:0 0 6px;gap:3px}#rc .s{height:26px;border-width:2px}
+#bp{width:44px;height:44px;margin:4px 0 0;box-shadow:none;border-width:2px}
+#wk{display:grid;gap:8px;justify-content:center;align-items:start;grid-template-columns:var(--bs) 92px;grid-template-areas:"ge wc" "go wc"}
+#wk #ge,#wk #go{width:var(--bs);height:var(--bs);margin:0}#ge{grid-area:ge}#go{grid-area:go}#wc{grid-area:wc}
+@media (orientation:landscape) and (max-height:560px){
+ #vW{max-width:none}
+ #wk{grid-template-columns:var(--bs) 92px var(--bs);grid-template-areas:"ge wc go"}
+ :root{--bs:min(calc(100dvh - 120px),calc((100vw - 140px)/2))}
+ #vC{max-width:none}
+ #cv{grid-template-columns:var(--bs) 92px var(--bs);grid-template-areas:"bd rc gc"}}
+#cp{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:12px}
+#cp .box{background:var(--pn,#241f35);border:4px solid var(--lo);padding:10px;width:min(100%,360px)}
+#cgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.cc{aspect-ratio:1;min-height:0;padding:0;border-width:2px}
+.cc.on{outline:3px solid #fff;outline-offset:1px}
+.cpf{margin-top:10px}.cpf button{width:100%}
+.pcb{width:100%;height:40px;min-height:0;padding:0;border:3px solid var(--lo)}
 </style></head><body>
 <header>
-<button id="tC" class="on">Canvas</button><button id="tW">Workshop</button><span class="sp"></span>
-<button id="un" title="Undo">Undo</button><button id="re" title="Redo">Redo</button>
-<button id="ex">Save</button><button id="im">Load</button><button id="nw">New</button>
+<button id="tC" class="on" data-tip="Canvas (Ctrl+1 or Alt+1)">Canvas</button><button id="tW" data-tip="Workshop (Ctrl+2 or Alt+2)">Workshop</button><span class="sp"></span>
+<button id="un" data-ic="undo"></button><button id="re" data-ic="redo"></button>
+<button id="ex" data-ic="save"></button><button id="im" data-ic="load"></button><button id="nw" data-ic="new"></button>
 <input type="file" id="fi" accept="image/png" hidden>
 </header>
 <div id="msg"></div>
 <main>
 <section class="view on" id="vC">
+<div id="cv">
 <canvas id="bd" width="512" height="512"></canvas>
-<div class="row" id="tools"></div>
-<div class="row" id="modes"><span><u>M</u>ode</span><button data-m="char">Char</button><button data-m="colour">Colour</button><button data-m="both">Both</button></div>
-<div class="row" id="xf"><button data-o="rot"><u>R</u>otate</button><button data-o="fh">Flip <u>H</u></button><button data-o="fv">Flip <u>V</u></button><button data-o="inv"><u>I</u>nvert</button></div>
-<div class="row" id="selbar" hidden><button id="selt"><u>T</u>ransparent</button><button id="seldel"><u>Del</u>ete</button><button id="selst"><u>S</u>tamp</button><button id="selok"><u>P</u>lace</button></div>
-<div><u>F</u>oreground</div><div class="sw" id="sf"></div>
-<div><u>B</u>ackground</div><div class="sw" id="sb"></div>
-<details open><summary>Glyphs</summary><canvas id="gc" width="256" height="256"></canvas></details>
+<div id="rc">
+<div class="grp" id="tools"></div>
+<div class="grp" id="modes"><button data-m="char" data-ic="text" data-tip="Char mode (M cycles modes)"></button><button data-m="colour" data-ic="colour" data-tip="Colour mode (M cycles modes)"></button><button data-m="both" data-ic="both" data-tip="Both mode (M cycles modes)"></button></div>
+<div class="grp" id="xf"><button data-o="rot" data-ic="rotate"></button><button data-o="fh" data-ic="fliph"></button><button data-o="fv" data-ic="flipv"></button><button data-o="inv" data-ic="invert"></button></div>
+<div class="grp" id="selbar" hidden><button id="selt" data-ic="transparent" data-tip="Transparent: empty tiles leave the tile underneath alone (T)"></button><button id="seldel" data-ic="del" data-tip="Delete selection (Del)"></button><button id="selst" data-ic="stamp" data-tip="Stamp: place a copy and keep the selection (S)"></button><button id="selok" data-ic="place" data-tip="Place the selection (P)"></button></div>
+<div class="cg"><div class="cl"><u>F</u>G</div><div class="sw" id="sf"></div><div class="cl"><u>B</u>G</div><div class="sw" id="sb"></div><canvas id="bp" width="8" height="8"></canvas></div>
+</div>
+<canvas id="gc" width="256" height="256"></canvas>
+</div>
 </section>
 <section class="view" id="vW">
 <h3>Palette</h3><div class="pal" id="pal"></div>
 <h3>Glyph <span id="gn"></span></h3>
+<div id="wk">
 <canvas id="ge" width="256" height="256"></canvas>
-<div class="row"><button id="grot"><u>R</u>otate</button><button id="gfh">Flip <u>H</u></button><button id="gfv">Flip <u>V</u></button><button id="ginv"><u>I</u>nvert</button><button id="gcl">Clear</button><button id="gcp"><u>C</u>opy</button><button id="gps"><u>P</u>aste</button></div>
-<div class="row"><button id="tsi">Import tileset</button><button id="tse">Export tileset</button></div>
-<input type="file" id="tsf" accept="image/*" hidden>
+<div id="wc">
+<div class="grp"><button id="grot" data-ic="rotate"></button><button id="gfh" data-ic="fliph"></button><button id="gfv" data-ic="flipv"></button><button id="ginv" data-ic="invert"></button></div>
+<div class="grp"><button id="gcl" data-ic="del" data-tip="Clear glyph (Del)"></button><button id="gcp" data-ic="copy" data-tip="Copy glyph (C)"></button><button id="gps" data-ic="paste" data-tip="Paste glyph (P)"></button></div>
+<div class="grp"><button id="tsi" data-ic="upload" data-tip="Import tileset: replace all glyphs from a 64×64 image (Ctrl+I)"></button><button id="tse" data-ic="download" data-tip="Export tileset: save all glyphs as a 64×64 image (Ctrl+E)"></button></div>
+</div>
 <canvas id="go" width="256" height="256"></canvas>
+</div>
+<div id="cp" hidden><div class="box"><div id="cgrid"></div><div class="cpf"><button id="cx">Cancel</button></div></div></div>
+<input type="file" id="tsf" accept="image/*" hidden>
 <h3>Metadata</h3><div id="meta"></div>
 </section>
 </main>
@@ -271,25 +310,52 @@ function draw(){const P=art.palette,fg=P[brush.fg],bg=P[brush.bg];
   lines(c,32,8,"rgba(255,255,255,.12)");c.strokeStyle="#ffc233";c.lineWidth=3;c.strokeRect((brush.glyph%8)*32+1.5,(brush.glyph>>3)*32+1.5,29,29)}
  const e=$("ge").getContext("2d");drawGlyph(e,art,brush.glyph,fg,bg,0,0,32);lines(e,32,8,"rgba(255,255,255,.18)");
  const b=$("bp");if(b)drawGlyph(b.getContext("2d"),art,brush.glyph,fg,bg,0,0,1)}
+const IC={paint:[3,7,46,20,104,116,240,192],fill:[126,129,189,66,126,122,122,60],replace:[246,243,241,240,7,143,207,111],pick:[6,15,63,30,44,84,160,192],erase:[12,30,63,95,142,132,72,48],grid:[255,146,146,255,146,146,255,146],text:[24,24,60,36,60,102,66,231],colour:[14,57,73,79,254,152,152,112],both:[24,24,56,32,54,111,79,230],rotate:[0,61,67,71,64,64,48,0],fliph:[0,36,102,231,231,102,36,0],flipv:[24,60,126,0,0,126,60,24],invert:[255,253,249,241,225,193,129,255],undo:[0,32,96,254,97,33,2,0],redo:[0,4,6,127,134,132,64,0],save:[252,218,219,195,255,193,193,255],load:[120,134,128,159,159,190,190,252],new:[116,118,112,126,126,126,126,126],del:[24,126,0,126,86,86,86,60],copy:[120,76,68,69,69,125,1,31],paste:[24,36,90,126,66,126,66,126],transparent:[56,68,130,170,130,130,170,214],stamp:[24,60,60,24,24,126,66,126],place:[24,24,24,126,60,24,0,126],download:[24,24,24,126,60,24,66,126],upload:[24,60,126,24,24,24,66,126]};
+/* 8x8 icons (one byte per row, MSB = leftmost pixel) drawn as crisp SVG in the text colour; the label lives in data-tip */
+const TIPS={paint:"Paint (1)",fill:"Fill (2)",replace:"Replace (3)",pick:"Pick (4)",erase:"Erase (5)",grid:"Grid (G)",rotate:"Rotate (R)",fliph:"Flip horizontally (H)",flipv:"Flip vertically (V)",invert:"Invert (I)",undo:"Undo (Ctrl+Z)",redo:"Redo (Ctrl+Y)",save:"Save (Ctrl+S)",load:"Load (Ctrl+O)",new:"New (Ctrl+N, twice)"};
+function svg(n){let d="";IC[n].forEach((r,y)=>{for(let x=0;x<8;){if(r>>(7-x)&1){let w=1;while(x+w<8&&r>>(7-x-w)&1)w++;d+="M"+x+" "+y+"h"+w+"v1h-"+w+"z";x+=w}else x++}});return'<svg class="ic" viewBox="0 0 8 8" aria-hidden="true"><path d="'+d+'"/></svg>'}
+function icon(b,n,tip){b.innerHTML=svg(n);b.dataset.tip=tip||b.dataset.tip||TIPS[n];b.setAttribute("aria-label",b.dataset.tip)}
+document.querySelectorAll("[data-ic]").forEach(b=>icon(b,b.dataset.ic));
+/* tooltips: hover on a mouse, long-press on touch (the press then does not trigger the button) */
+const tipEl=document.createElement("div");tipEl.id="tip";tipEl.hidden=true;document.body.append(tipEl);
+let tipT,lp=false;
+function showTip(b){tipEl.textContent=b.dataset.tip;tipEl.hidden=false;const r=b.getBoundingClientRect(),w=tipEl.offsetWidth;
+ tipEl.style.left=Math.max(4,Math.min(innerWidth-w-4,r.left+r.width/2-w/2))+"px";tipEl.style.top=(r.top>44?r.top-tipEl.offsetHeight-6:r.bottom+6)+"px"}
+const hideTip=()=>{clearTimeout(tipT);tipEl.hidden=true},tipBtn=e=>e.target.closest&&e.target.closest("[data-tip]");
+document.addEventListener("pointerover",e=>{const b=tipBtn(e);if(b&&e.pointerType==="mouse"){clearTimeout(tipT);tipT=setTimeout(()=>showTip(b),250)}});
+document.addEventListener("pointerout",e=>{if(e.pointerType==="mouse")hideTip()});
+document.addEventListener("pointerdown",e=>{lp=false;const b=tipBtn(e);if(!b)return;hideTip();if(e.pointerType!=="mouse")tipT=setTimeout(()=>{lp=true;showTip(b);navigator.vibrate&&navigator.vibrate(10)},450)});
+for(const ty of["pointerup","pointercancel"])document.addEventListener(ty,()=>{clearTimeout(tipT);if(lp){setTimeout(hideTip,1600);setTimeout(()=>lp=false,300)}});
+document.addEventListener("click",e=>{if(lp){e.stopPropagation();e.preventDefault();lp=false}},true);
+document.addEventListener("contextmenu",e=>{if(tipBtn(e))e.preventDefault()});
 function buildTools(){const t=$("tools");t.innerHTML="";
- const add=(n,on,f)=>{const b=document.createElement("button");b.innerHTML=n;b.className=on?"on":"";b.onclick=f;t.append(b)};
+ const add=(n,on,f)=>{const b=document.createElement("button");icon(b,n);b.className=on?"on":"";b.onclick=f;t.append(b)};
  ["paint","fill","replace","pick","erase"].forEach(n=>add(n,brush.tool===n,()=>setTool(n)));
- add("<u>g</u>rid",showGrid,()=>{showGrid=!showGrid;buildTools();draw()});
- const p=document.createElement("canvas");p.id="bp";p.width=p.height=8;p.style.cssText="width:40px;height:40px;margin:0 0 0 auto";t.append(p);draw()}
+ add("grid",showGrid,()=>{showGrid=!showGrid;buildTools();draw()});
+ draw()}
 function swatches(){for(const[id,k]of[["sf","fg"],["sb","bg"]]){const e=$(id);e.innerHTML="";
  art.palette.forEach((c,i)=>{const b=document.createElement("button");b.style.background=c;b.className=brush[k]===i?"s on":"s";b.setAttribute("aria-label",k+" colour "+(i+1));b.onclick=()=>{brush[k]=i;refresh()};e.append(b)})}}
-const pin=[];art.palette.forEach((c,i)=>{const l=document.createElement("label"),inp=document.createElement("input"),h=document.createElement("span");
- l.className="pc";inp.type="color";l.append(inp,h);$("pal").append(l);pin.push([inp,h]);
- inp.oninput=()=>{soft("p"+i);art.palette[i]=inp.value;h.textContent=inp.value;refresh()}});
+const pin=[];art.palette.forEach((c,i)=>{const l=document.createElement("label"),sw=document.createElement("button"),h=document.createElement("span");
+ l.className="pc";sw.className="pcb";sw.style.background=c;l.append(sw,h);$("pal").append(l);pin.push([sw,h]);sw.onclick=()=>openPicker(i)});
+/* colour map: 8 greys, then 7 lightness steps of 8 hues; tap a tile to pick it */
+const PICK=(()=>{const o=[0,32,64,96,128,168,212,255].map(v=>"#"+v.toString(16).padStart(2,"0").repeat(3)),
+ hsl=(h,s,l)=>{const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return"#"+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,"0")).join("")};
+ for(const l of[.85,.74,.63,.52,.41,.30,.19])for(const h of[0,28,52,120,174,214,270,322])o.push(hsl(h,.8,l));return o})();
+PICK.forEach(c=>{const b=document.createElement("button");b.className="cc";b.style.background=c;b.dataset.c=c;b.setAttribute("aria-label",c);$("cgrid").append(b)});
+let cpi=-1;
+function openPicker(i){cpi=i;const cur=art.palette[i].toLowerCase();$("cgrid").querySelectorAll("button").forEach(b=>b.className=b.dataset.c===cur?"cc on":"cc");$("cp").hidden=false}
+function setPal(i,c){soft("p"+i);art.palette[i]=c;pin[i][0].style.background=c;pin[i][1].textContent=c;$("cp").hidden=true;refresh()}
+$("cgrid").onclick=e=>{const b=e.target.closest("button");if(b)setPal(cpi,b.dataset.c)};
+$("cx").onclick=()=>$("cp").hidden=true;$("cp").onclick=e=>{if(e.target===$("cp"))$("cp").hidden=true};
 MF.forEach(k=>{const l=document.createElement("label"),i=document.createElement("input");l.className="mf";l.append(k[0].toUpperCase()+k.slice(1),i);
  i.id="m_"+k;i.type=k==="date"?"date":"text";i.oninput=()=>{soft("m"+k);art.metadata[k]=i.value};$("meta").append(l)});
 function refresh(sync){swatches();draw();$("un").disabled=!undo.length;$("re").disabled=!redo.length;$("gn").textContent="#"+brush.glyph;$("selbar").hidden=!sel;$("selt").className=trans?"on":"";document.querySelectorAll("#modes [data-m]").forEach(b=>b.className=b.dataset.m===mode?"on":"");$("sf").style.opacity=$("sb").style.opacity=mode==="char"?.4:1;$("gc").style.opacity=mode==="colour"?.4:1;
- if(sync){pin.forEach(([i,h],k)=>{i.value=art.palette[k];h.textContent=art.palette[k]});MF.forEach(k=>$("m_"+k).value=art.metadata[k])}}
+ if(sync){pin.forEach(([i,h],k)=>{i.style.background=art.palette[k];h.textContent=art.palette[k]});MF.forEach(k=>$("m_"+k).value=art.metadata[k])}}
 function tab(w){$("vC").classList.toggle("on",!w);$("vW").classList.toggle("on",w);$("tC").className=w?"":"on";$("tW").className=w?"on":"";refresh()}
 $("grot").onclick=()=>{snap();art.glyphs[brush.glyph]=fromFn(art.glyphs[brush.glyph],rotF);refresh()};
-let nwT;$("nw").onclick=()=>{const b=$("nw");
- if(b.textContent==="New"){b.textContent="Clear all?";b.className="on";nwT=setTimeout(()=>{b.textContent="New";b.className=""},4000);say("Tap again to clear tiles, glyphs, palette and metadata. Undo restores them.");return}
- clearTimeout(nwT);b.textContent="New";b.className="";commitSel();snap();art=def();refresh(true);say("New file")};
+let nwT,nwOn=false;$("nw").onclick=()=>{const b=$("nw");
+ if(!nwOn){nwOn=true;b.className="on";nwT=setTimeout(()=>{nwOn=false;b.className=""},4000);say("Tap again to clear tiles, glyphs, palette and metadata. Undo restores them.");return}
+ clearTimeout(nwT);nwOn=false;b.className="";commitSel();snap();art=def();refresh(true);say("New file")};
 document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>selOp(b.dataset.o));$("selok").onclick=commitSel;
 $("selst").onclick=()=>{if(!sel)return;snap();art.map=flat().map;refresh();say("Stamped")};
 $("selt").onclick=()=>{trans=!trans;const e=art.glyphs.findIndex(q=>!q.some(r=>r));refresh();say(trans?(e<0?"Transparent on, but no empty glyph exists":"Transparent: glyph #"+e+" no longer covers tiles"):"Transparent off")};
@@ -322,6 +388,7 @@ function pasteSel(){if(!sclip){say("Nothing copied yet",1);return}commitSel();sn
 const MODES={char:"colour",colour:"both",both:"char"};
 addEventListener("keydown",e=>{
  const t=e.target;if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable)return;
+ if(!$("cp").hidden){if(e.key==="Escape"){e.preventDefault();$("cp").hidden=true}return}
  const mod=e.ctrlKey||e.metaKey,k=e.key.toLowerCase(),c=e.code,ws=$("vW").classList.contains("on"),
   go=f=>{e.preventDefault();f()},click=id=>go(()=>$(id).click());
  if(e.repeat&&!(mod&&(k==="z"||k==="y"))&&!/^Key[WASD]$/.test(c))return;
