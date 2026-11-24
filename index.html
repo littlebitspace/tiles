@@ -28,9 +28,6 @@ canvas{display:block;image-rendering:pixelated;touch-action:none;-webkit-touch-c
 .s{height:38px;padding:0}.s.on{outline:3px solid var(--ac);outline-offset:1px}
 summary{padding:8px 0;cursor:pointer}
 h3{margin:16px 0 6px;font-size:14px;font-weight:700}
-.pal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.pc{display:flex;flex-direction:column;gap:2px;font-size:11px;text-align:center}
-.pc input{width:100%;height:40px;padding:0;border:1px solid var(--ln);background:none}
 .mf{display:flex;flex-direction:column;gap:2px;margin:6px 0}
 .mf input{font:inherit;color:var(--tx);background:var(--pn);border:1px solid var(--ln);padding:8px;border-radius:3px}
 /* pixel skin: hard edges, bevelled buttons, stepped shadows, dithered ground */
@@ -42,7 +39,6 @@ button:active{transform:translateY(2px);box-shadow:inset 3px 3px 0 rgba(0,0,0,.4
 button.on{background:var(--ac);color:#1a1100;border-color:var(--lo)}
 .s{min-height:0}.s.on{outline:3px solid #fff;outline-offset:0}
 canvas{border:3px solid var(--lo);box-shadow:0 0 0 3px var(--hi),4px 4px 0 3px var(--lo)}
-.pc input{border:3px solid var(--lo);border-radius:0}
 .mf input{border:3px solid var(--lo);border-radius:0;background:#120e1c;box-shadow:inset 3px 3px 0 rgba(0,0,0,.45)}
 h3{display:flex;align-items:center;gap:8px;margin:20px 0 8px;font-size:16px}
 h3::after{content:"";flex:1;height:4px;background:repeating-linear-gradient(90deg,var(--hi) 0 4px,transparent 4px 8px)}
@@ -66,6 +62,9 @@ button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #rc .sw{margin:0 0 6px;gap:3px}#rc .s{height:26px;border-width:2px}
 #bp{width:44px;height:44px;margin:4px 0 0;box-shadow:none;border-width:2px}
 #wk{display:grid;gap:8px;justify-content:center;align-items:start;grid-template-columns:var(--bs) 92px;grid-template-areas:"ge wc" "go wc"}
+#dw{display:flex;gap:8px;align-items:flex-start;justify-content:center}#ds{width:64px;height:192px;margin:0}#de{flex:1;min-width:0;max-width:288px;height:auto;aspect-ratio:1/1;margin:0}
+#dp{display:flex;gap:6px;align-items:center;margin-top:8px}
+#dp select{flex:1;min-width:0;font:inherit;color:var(--tx);background:#2e2a42;border:3px solid var(--lo);padding:6px;border-radius:0}
 #wk #ge,#wk #go{width:var(--bs);height:var(--bs);margin:0}#ge{grid-area:ge}#go{grid-area:go}#wc{grid-area:wc}
 @media (orientation:landscape) and (max-height:560px){
  #vW{max-width:none}
@@ -73,13 +72,6 @@ button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
  :root{--bs:min(calc(100dvh - 120px),calc((100vw - 140px)/2))}
  #vC{max-width:none}
  #cv{grid-template-columns:var(--bs) 92px var(--bs);grid-template-areas:"bd rc gc"}}
-#cp{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:12px}
-#cp .box{background:var(--pn,#241f35);border:4px solid var(--lo);padding:10px;width:min(100%,360px)}
-#cgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
-.cc{aspect-ratio:1;min-height:0;padding:0;border-width:2px}
-.cc.on{outline:3px solid #fff;outline-offset:1px}
-.cpf{margin-top:10px}.cpf button{width:100%}
-.pcb{width:100%;height:40px;min-height:0;padding:0;border:3px solid var(--lo)}
 </style></head><body>
 <header>
 <button id="tC" class="on" data-ic="canvas" data-tip="Canvas (Ctrl+1 or Alt+1)"></button><button id="tW" data-ic="workshop" data-tip="Workshop (Ctrl+2 or Alt+2)"></button><span class="sp"></span>
@@ -93,113 +85,134 @@ button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 <div id="cv">
 <canvas id="bd" width="512" height="512"></canvas>
 <div id="rc">
+<div class="grp" id="lg"><button id="mlt" data-ic="both" data-tip="Tiles: the tools change tiles (M switches)"></button><button id="mld" data-ic="dither" data-tip="Dither: the tools change dither levels (M switches)"></button></div>
+<div class="grp" id="dg" hidden><button id="dup" data-ic="plus" data-tip="Increase: more black (off, 25, 50, 75%). Right-click does the opposite"></button><button id="ddn" data-ic="minus" data-tip="Decrease: less black (75, 50, 25%, off). Right-click does the opposite"></button></div>
 <div class="grp" id="tools"></div>
-<div class="grp" id="modes"><button data-m="char" data-ic="text" data-tip="Char mode (M cycles modes)"></button><button data-m="colour" data-ic="colour" data-tip="Colour mode (M cycles modes)"></button><button data-m="both" data-ic="both" data-tip="Both mode (M cycles modes)"></button></div>
 <div class="grp" id="xf"><button data-o="rot" data-ic="rotate"></button><button data-o="fh" data-ic="fliph"></button><button data-o="fv" data-ic="flipv"></button><button data-o="inv" data-ic="invert"></button></div>
 <div class="grp" id="selbar" hidden><button id="selt" data-ic="transparent" data-tip="Transparent: empty tiles leave the tile underneath alone (T)"></button><button id="seldel" data-ic="del" data-tip="Delete selection (Del)"></button><button id="selst" data-ic="stamp" data-tip="Stamp: place a copy and keep the selection (S)"></button><button id="selok" data-ic="place" data-tip="Place the selection (P)"></button></div>
-<div class="cg"><div class="cl"><u>F</u>G</div><div class="sw" id="sf"></div><div class="cl"><u>B</u>G</div><div class="sw" id="sb"></div><canvas id="bp" width="8" height="8"></canvas></div>
+<div class="cg"><canvas id="bp" width="8" height="8"></canvas></div>
 </div>
 <canvas id="gc" width="256" height="256"></canvas>
 </div>
 </section>
 <section class="view" id="vW">
-<h3>Palette</h3><div class="pal" id="pal"></div>
 <h3>Glyph <span id="gn"></span></h3>
 <div id="wk">
 <canvas id="ge" width="256" height="256"></canvas>
 <div id="wc">
 <div class="grp"><button id="grot" data-ic="rotate"></button><button id="gfh" data-ic="fliph"></button><button id="gfv" data-ic="flipv"></button><button id="ginv" data-ic="invert"></button></div>
 <div class="grp"><button id="gcl" data-ic="del" data-tip="Clear glyph (Del)"></button><button id="gcp" data-ic="copy" data-tip="Copy glyph (C)"></button><button id="gps" data-ic="paste" data-tip="Paste glyph (P)"></button></div>
-<div class="grp"><button id="tsi" data-ic="upload" data-tip="Import tileset: replace all glyphs from a 64×64 image (Ctrl+I)"></button><button id="tse" data-ic="download" data-tip="Export tileset: save all glyphs as a 64×64 image (Ctrl+E)"></button></div>
+<div class="grp"><button id="tsi" data-ic="upload" data-tip="Import tileset: replace all glyphs from a 32×32 image (Ctrl+I)"></button><button id="tse" data-ic="download" data-tip="Export tileset: save all glyphs as a 32×32 image (Ctrl+E)"></button></div>
 </div>
 <canvas id="go" width="256" height="256"></canvas>
 </div>
-<div id="cp" hidden><div class="box"><div id="cgrid"></div><div class="cpf"><button id="cx">Cancel</button></div></div></div>
+<h3>Dither <span id="dn"></span></h3>
+<div id="dw"><canvas id="ds" width="64" height="192"></canvas><canvas id="de" width="256" height="256"></canvas></div>
+<div id="dp"><span>Pattern</span><select id="dpat" aria-label="Premade dither pattern"><option>Checker</option><option>Horizontal lines</option><option>Vertical lines</option><option>Diagonal lines</option><option>Noise</option><option>Floral</option><option value="">Custom</option></select></div>
 <input type="file" id="tsf" accept="image/*" hidden>
 <h3>Metadata</h3><div id="meta"></div>
 </section>
 </main>
 <script>
 "use strict";
-/* TILE cartridge format v3  (64x64 RGBA PNG; data lives in the LSBs, 1 bit per channel)
+/* TILE cartridge format v7  (64x64 RGBA PNG; data lives in the LSBs, 1 bit per channel; 16 glyphs, 2 colours, 3 dither patterns)
    Alpha is always 255 and unused. The visible pixels are the artwork (each tile = 8x8 px).
-   Red LSB plane = the tile set, pixel for pixel: a 64x64 sheet of 8x8 glyphs in reading order (glyph g at column g%8, row g>>3),
-     bit 1 = set pixel, leftmost pixel = leftmost bit. A black/white tile-set image therefore already is a valid plane.
+   Red LSB plane, top-left 32x32 px = the tile set, pixel for pixel: a 4x4 sheet of 8x8 glyphs in reading order (glyph g at column g%4, row g>>2),
+     bit 1 = set pixel, leftmost pixel = leftmost bit. A black/white 32x32 tile-set image therefore already is a valid plane.
    Green and Blue LSBs = payload stream: pixel order left->right, top->bottom, G then B; bytes MSB first. Capacity 4096*2/8 = 1024 bytes.
    Payload (all multi-byte ints little-endian):
-     0  "TILE" (4)   4  version (3)   5  metaLen u16   7  palette 3x RGB (9)
-     16 map 64 x 10 bits (glyph6|fg2|bg2; colours 0-2), packed back to back, first entry in the high bits (80)
-     96 metadata UTF-8 JSON {author,group,title,date} (metaLen)   then CRC-32 of all preceding payload bytes (4)
+     0  "TILE" (4)   4  version (7)   5  metaLen u16   7  palette 2x RGB (6), always #000000 and #ffffff in this editor
+     13 map 64 x 14 bits (glyph4|fg1|bg1|dither8), packed back to back, first entry in the high bits (112)
+        dither8 = 2 bits per quarter (bits 0-1 top-left, 2-3 top-right, 4-5 bottom-left, 6-7 bottom-right): 0 off, 1/2/3 = dither pattern 25/50/75%.
+        Dither is a layer on top of the tile: where the pattern is set the pixel is painted palette colour 0 (black by default), over whatever the tile shows.
+     125 dither patterns: 3 tiles x 8 row bytes, 25%, 50%, 75%, MSB = leftmost pixel, 1 = black pixel (24)
+     149 metadata UTF-8 JSON {author,group,title,date} (metaLen)   then CRC-32 of all preceding payload bytes (4)
    The CRC does not cover the tile set plane, so a tile set can be edited in an image editor.
-   Versions 1 and 2 are not readable by this editor. */
+   Still read: version 6 (same, but the dither patterns sat under the glyph sheet in the red plane, x 0-23 y 32-39), version 5 (10-bit map entries, one
+   dither bit per quarter = the 50% checker) and version 4 (6-bit entries, no dither). Versions 1 to 3 are not. */
 const CAP=1024,MF=["author","group","title","date"],$=id=>document.getElementById(id);
-const G=[[0,0,0,0,0,0,0,0],[255,255,255,255,255,255,255,255],[170,85,170,85,170,85,170,85],[170,0,170,0,170,0,170,0],[192,192,192,192,192,192,192,192],[48,48,48,48,48,48,48,48],[12,12,12,12,12,12,12,12],[3,3,3,3,3,3,3,3],[0,0,60,60,60,60,0,0],[0,24,60,126,126,60,24,0],[240,240,240,240,240,240,240,240],[0,0,0,0,255,255,255,255],[0,0,0,0,0,0,255,255],[0,0,0,0,255,255,0,0],[0,0,255,255,0,0,0,0],[255,255,0,0,0,0,0,0],[7,31,63,127,127,255,255,255],[224,248,252,254,254,255,255,255],[0,0,0,0,3,7,15,15],[0,0,0,0,192,224,240,240],[7,31,60,112,96,224,192,192],[224,248,60,14,6,7,3,3],[0,0,0,0,3,7,14,12],[0,0,0,0,192,224,112,48],[255,255,255,127,127,63,31,7],[255,255,255,254,254,252,248,224],[15,15,7,3,0,0,0,0],[240,240,224,192,0,0,0,0],[192,192,224,96,112,60,31,7],[3,3,7,6,14,60,248,224],[12,14,7,3,0,0,0,0],[48,112,224,192,0,0,0,0],[3,7,15,15,15,15,7,3],[0,0,0,0,60,126,255,255],[0,0,0,0,15,15,15,15],[0,0,0,0,240,240,240,240],[255,255,192,192,192,192,192,192],[255,255,3,3,3,3,3,3],[0,0,0,0,15,15,12,12],[0,0,0,0,240,240,48,48],[255,255,126,60,0,0,0,0],[192,224,240,240,240,240,224,192],[15,15,15,15,0,0,0,0],[240,240,240,240,0,0,0,0],[192,192,192,192,192,192,255,255],[3,3,3,3,3,3,255,255],[12,12,15,15,0,0,0,0],[48,48,240,240,0,0,0,0],[10,0,10,0,10,0,10,0],[0,0,0,0,170,0,170,0],[10,5,10,5,10,5,10,5],[0,0,0,0,170,85,170,85],[10,15,10,15,10,15,10,15],[0,0,0,0,170,255,170,255],[1,3,7,15,31,63,127,255],[128,192,224,240,248,252,254,255],[170,0,170,0,0,0,0,0],[160,0,160,0,160,0,160,0],[170,85,170,85,0,0,0,0],[160,80,160,80,160,80,160,80],[170,255,170,255,0,0,0,0],[160,240,160,240,160,240,160,240],[0,60,126,126,126,126,60,0],[160,160,182,148,150,146,86,0]];
-const def=()=>({version:3,metadata:{author:"",group:"",title:"",date:new Date().toISOString().slice(0,10)},
- palette:["#000000","#808080","#ffffff"],
- glyphs:Array.from({length:64},(_,i)=>Array.from({length:8},(_,j)=>G[i]?G[i][j%G[i].length]:0)),
- map:Array.from({length:64},()=>({glyph:0,fg:2,bg:0}))});
+const G=[[0,0,0,0,0,0,0,0],[255,255,255,255,255,255,255,255],[170,85,170,85,170,85,170,85],[170,0,170,0,170,0,170,0],[0,0,60,60,60,60,0,0],[0,24,60,126,126,60,24,0],[240,240,240,240,240,240,240,240],[0,0,0,0,255,255,255,255],[7,31,63,127,127,255,255,255],[224,248,252,254,254,255,255,255],[0,0,0,0,3,7,15,15],[0,0,0,0,192,224,240,240],[255,255,255,127,127,63,31,7],[255,255,255,254,254,252,248,224],[15,15,7,3,0,0,0,0],[240,240,224,192,0,0,0,0]];
+/* premade dither families: a threshold 0-3 per pixel, nested so 25% is inside 50% is inside 75% */
+const FAMS=(()=>{let z=12345;const rnd=()=>(z=(z*1664525+1013904223)>>>0)/4294967296,perm=[...Array(64).keys()];for(let i=63;i>0;i--){const j=Math.floor(rnd()*(i+1));[perm[i],perm[j]]=[perm[j],perm[i]]}
+ return{"Checker":(x,y)=>[[0,3],[2,1]][y&1][x&1],"Floral":(x,y)=>[[3,0,1,3],[1,2,2,0],[0,2,2,1],[3,1,0,3]][y&3][x&3],"Horizontal lines":(x,y)=>[0,2,1,3][y&3],"Vertical lines":(x,y)=>[0,2,1,3][x&3],"Diagonal lines":(x,y)=>(x+y)&3,"Noise":(x,y)=>perm[y*8+x]>>4}})();
+const famTiles=n=>[1,2,3].map(k=>Array.from({length:8},(_,y)=>{let r=0;for(let x=0;x<8;x++)r=r<<1|(FAMS[n](x,y)<k?1:0);return r})),
+ famName=d=>Object.keys(FAMS).find(n=>JSON.stringify(famTiles(n))===JSON.stringify(d))||"";
+const def=()=>({version:7,metadata:{author:"",group:"",title:"",date:new Date().toISOString().slice(0,10)},
+ palette:["#000000","#ffffff"],
+ glyphs:Array.from({length:16},(_,i)=>Array.from({length:8},(_,j)=>G[i]?G[i][j%G[i].length]:0)),
+ map:Array.from({length:64},()=>({glyph:0,fg:1,bg:0})),dither:famTiles("Checker")});
 
 /* ---------- renderer (pure canvas drawing) ---------- */
-function drawGlyph(c,a,g,fg,bg,x,y,s){c.fillStyle=bg;c.fillRect(x,y,8*s,8*s);c.fillStyle=fg;const r=a.glyphs[g];
- for(let j=0;j<8;j++)for(let i=0;i<8;i++)if(r[j]>>(7-i)&1)c.fillRect(x+i*s,y+j*s,s,s)}
+/* dither: a separate layer on top of the tiles. A tile's d holds 2 bits per quarter (bits 0-1 top-left, 2-3 top-right, 4-5 bottom-left, 6-7 bottom-right):
+   0 = off, 1/2/3 = the 25/50/75% pattern tile art.dither[level-1]. Wherever the pattern is set the pixel is painted palette colour 0 (black by default),
+   whatever the tile underneath looks like, inverted or not. */
+/* a quarter is fully black when every pixel of it shows palette colour 0, glyph and inversion considered; dither there would be invisible, so it is never kept */
+const quadBlack=(a,m,q)=>{const x0=(q&1)*4,y0=(q>>1)*4;for(let j=y0;j<y0+4;j++)for(let i=x0;i<x0+4;i++)if((a.glyphs[m.glyph][j]>>(7-i)&1?m.fg:m.bg)!==0)return false;return true},
+ cleanD=(a,m)=>{let d=m.d|0;for(let q=0;q<4;q++)if((d>>q*2&3)&&quadBlack(a,m,q))d&=~(3<<q*2);return d};
+const dith=(a,d,i,j)=>{const l=d>>(((j>>2)*2+(i>>2))*2)&3;return l?a.dither[l-1][j]>>(7-i)&1:0};
+function drawGlyph(c,a,g,fg,bg,x,y,s,d=0){c.fillStyle=bg;c.fillRect(x,y,8*s,8*s);const r=a.glyphs[g];
+ for(let j=0;j<8;j++)for(let i=0;i<8;i++){const k=dith(a,d,i,j);if(k||(r[j]>>(7-i)&1)){c.fillStyle=k?a.palette[0]:fg;c.fillRect(x+i*s,y+j*s,s,s)}}}
 function lines(c,cell,n,col){c.fillStyle=col;for(let k=1;k<n;k++){c.fillRect(k*cell,0,1,n*cell);c.fillRect(0,k*cell,n*cell,1)}}
 function renderArt(c,a,s,grid){c.imageSmoothingEnabled=false;
- for(let i=0;i<64;i++){const m=a.map[i];drawGlyph(c,a,m.glyph,a.palette[m.fg],a.palette[m.bg],(i%8)*8*s,(i>>3)*8*s,s)}
+ for(let i=0;i<64;i++){const m=a.map[i];drawGlyph(c,a,m.glyph,a.palette[m.fg],a.palette[m.bg],(i%8)*8*s,(i>>3)*8*s,s,m.d|0)}
  if(grid)lines(c,8*s,8,"rgba(255,255,255,.16)")}
 
 /* ---------- cartridge codec ---------- */
 function crc32(b){let r=-1;for(let i=0;i<b.length;i++){r^=b[i];for(let k=0;k<8;k++)r=r&1?(r>>>1)^0xEDB88320:r>>>1}return(r^-1)>>>0}
-function serialize(a){const meta=new TextEncoder().encode(JSON.stringify(a.metadata)),n=100+meta.length;
+function serialize(a){const meta=new TextEncoder().encode(JSON.stringify(a.metadata)),n=153+meta.length;
  if(n>CAP)throw Error(`Metadata too long: payload is ${n} bytes, capacity ${CAP}. Remove about ${n-CAP} bytes of text.`);
  const o=new Uint8Array(n);o.set([84,73,76,69,a.version,meta.length&255,meta.length>>8]);let p=7;
  a.palette.forEach(c=>{for(let k=0;k<3;k++)o[p++]=parseInt(c.substr(1+2*k,2),16)});
- let acc=0,nb=0;for(const m of a.map){acc=acc<<10|m.glyph<<4|m.fg<<2|m.bg;nb+=10;while(nb>=8){o[p++]=acc>>(nb-8)&255;nb-=8}acc&=(1<<nb)-1}
- o.set(meta,p);p+=meta.length;new DataView(o.buffer).setUint32(p,crc32(o.subarray(0,p)),true);return o}
+ let acc=0,nb=0;for(const m of a.map){acc=acc<<14|m.glyph<<10|m.fg<<9|m.bg<<8|((m.d|0)&255);nb+=14;while(nb>=8){o[p++]=acc>>(nb-8)&255;nb-=8}acc&=(1<<nb)-1}
+ a.dither.forEach(q=>q.forEach(r=>o[p++]=r));o.set(meta,p);p+=meta.length;new DataView(o.buffer).setUint32(p,crc32(o.subarray(0,p)),true);return o}
 function readBytes(d,n){const o=new Uint8Array(n);for(let i=0;i<n*8;i++){const p=(i>>1)*4+1+(i&1);o[i>>3]=o[i>>3]<<1|d[p]&1}return o}
-function readGlyphs(d){return Array.from({length:64},(_,g)=>Array.from({length:8},(_,j)=>{let r=0;for(let x=0;x<8;x++)r=r<<1|d[(((g>>3)*8+j)*64+(g&7)*8+x)*4]&1;return r}))}
+function readDither(d){return Array.from({length:3},(_,k)=>Array.from({length:8},(_,j)=>{let r=0;for(let x=0;x<8;x++)r=r<<1|d[((32+j)*64+k*8+x)*4]&1;return r}))}
+function readGlyphs(d){return Array.from({length:16},(_,g)=>Array.from({length:8},(_,j)=>{let r=0;for(let x=0;x<8;x++)r=r<<1|d[(((g>>2)*8+j)*64+(g&3)*8+x)*4]&1;return r}))}
 function parse(d){const h=readBytes(d,7);
  if(String.fromCharCode(...h.subarray(0,4))!=="TILE")throw Object.assign(Error("Not a Tilecart image: signature not found."),{noSig:1});
- if(h[4]!==3)throw Error("Unsupported cartridge version "+h[4]+" (this editor reads version 3).");
- const ml=h[5]|h[6]<<8,n=100+ml;if(n>CAP)throw Error("Corrupt header: declared length exceeds capacity.");
+ if(h[4]<4||h[4]>7)throw Error("Unsupported cartridge version "+h[4]+" (this editor reads versions 4 to 7).");
+ const ml=h[5]|h[6]<<8,n=({4:65,5:97,6:129,7:153})[h[4]]+ml;if(n>CAP)throw Error("Corrupt header: declared length exceeds capacity.");
  const b=readBytes(d,n);if(new DataView(b.buffer).getUint32(n-4,true)!==crc32(b.subarray(0,n-4)))
   throw Error("Checksum mismatch. The PNG was probably re-encoded or edited.");
  const a=def();let p=7;
- a.palette=[...Array(3)].map(()=>"#"+[0,1,2].map(()=>b[p++].toString(16).padStart(2,"0")).join(""));
- a.glyphs=readGlyphs(d);
- {let acc=0,nb=0,i=0;while(i<64){acc=acc<<8|b[p++];nb+=8;while(nb>=10&&i<64){nb-=10;const v=acc>>nb&1023;a.map[i++]={glyph:v>>4,fg:Math.min(2,v>>2&3),bg:Math.min(2,v&3)}}acc&=(1<<nb)-1}}
+ p+=6; /* the palette is fixed to true black and white */
+ a.glyphs=readGlyphs(d);a.dither=h[4]===6?readDither(d):famTiles("Checker");
+ {const w=({4:6,5:10,6:14,7:14})[h[4]],up=b4=>(b4&1)<<1|(b4>>1&1)<<3|(b4>>2&1)<<5|(b4>>3&1)<<7;let acc=0,nb=0,i=0;while(i<64){acc=acc<<8|b[p++];nb+=8;while(nb>=w&&i<64){nb-=w;const v=acc>>nb&(1<<w)-1;a.map[i++]=w===6?{glyph:v>>2,fg:v>>1&1,bg:v&1,d:0}:w===10?{glyph:v>>6,fg:v>>5&1,bg:v>>4&1,d:up(v&15)}:{glyph:v>>10,fg:v>>9&1,bg:v>>8&1,d:v&255}}acc&=(1<<nb)-1}}
+ if(h[4]===7)a.dither=[0,1,2].map(()=>{const q=[...b.subarray(p,p+8)];p+=8;return q});
+ a.map.forEach(m=>{m.d=cleanD(a,m)});
  let m;try{m=JSON.parse(new TextDecoder().decode(b.subarray(p,p+ml)))}catch{throw Error("Metadata is not valid JSON.")}
  for(const k of MF)a.metadata[k]=String(m[k]??"");return a}
 function cover(a){const d=new Uint8Array(64*64*4),pal=a.palette.map(c=>[1,3,5].map(k=>parseInt(c.substr(k,2),16)));
- for(let y=0;y<64;y++)for(let x=0;x<64;x++){const m=a.map[(y>>3)*8+(x>>3)],on=a.glyphs[m.glyph][y&7]>>(7-(x&7))&1,c=pal[on?m.fg:m.bg],p=(y*64+x)*4;
+ for(let y=0;y<64;y++)for(let x=0;x<64;x++){const m=a.map[(y>>3)*8+(x>>3)],on=a.glyphs[m.glyph][y&7]>>(7-(x&7))&1,k=dith(a,m.d|0,x&7,y&7),c=pal[k?0:on?m.fg:m.bg],p=(y*64+x)*4;
   d[p]=c[0];d[p+1]=c[1];d[p+2]=c[2];d[p+3]=255}return d}
-function encodePNG(px){const raw=new Uint8Array(64*257);for(let y=0;y<64;y++)raw.set(px.subarray(y*256,y*256+256),y*257+1);
+function encodePNG(px,w=64,h=w){const W=w*4,raw=new Uint8Array(h*(W+1));for(let y=0;y<h;y++)raw.set(px.subarray(y*W,y*W+W),y*(W+1)+1);
  let s1=1,s2=0;for(const v of raw){s1=(s1+v)%65521;s2=(s2+s1)%65521}
  const L=raw.length,z=new Uint8Array(7+L+4);z.set([0x78,1,1,L&255,L>>8,~L&255,~L>>8&255]);z.set(raw,7);
  new DataView(z.buffer).setUint32(7+L,(s2<<16|s1)>>>0);
  const ch=(t,d)=>{const o=new Uint8Array(12+d.length),v=new DataView(o.buffer);v.setUint32(0,d.length);
   for(let i=0;i<4;i++)o[4+i]=t.charCodeAt(i);o.set(d,8);v.setUint32(8+d.length,crc32(o.subarray(4,8+d.length)));return o};
- const ih=new Uint8Array(13),iv=new DataView(ih.buffer);iv.setUint32(0,64);iv.setUint32(4,64);ih[8]=8;ih[9]=6;
+ const ih=new Uint8Array(13),iv=new DataView(ih.buffer);iv.setUint32(0,w);iv.setUint32(4,h);ih[8]=8;ih[9]=6;
  return new Blob([new Uint8Array([137,80,78,71,13,10,26,10]),ch("IHDR",ih),ch("IDAT",z),ch("IEND",new Uint8Array(0))],{type:"image/png"})}
 function toPNG(a){const data=serialize(a),d=cover(a);
  for(let i=0;i<data.length*8;i++){const bit=data[i>>3]>>(7-(i&7))&1,p=(i>>1)*4+1+(i&1);d[p]=d[p]&254|bit}
- a.glyphs.forEach((q,g)=>q.forEach((r,j)=>{for(let x=0;x<8;x++){const p=(((g>>3)*8+j)*64+(g&7)*8+x)*4;d[p]=d[p]&254|r>>(7-x)&1}}));
+ a.glyphs.forEach((q,g)=>q.forEach((r,j)=>{for(let x=0;x<8;x++){const p=(((g>>2)*8+j)*64+(g&3)*8+x)*4;d[p]=d[p]&254|r>>(7-x)&1}}));
  return encodePNG(d)}
 async function loadPNG(f){let bm;
  try{bm=await createImageBitmap(f,{premultiplyAlpha:"none",colorSpaceConversion:"none"})}catch{throw Error("Could not decode this file as a PNG image.")}
- if(bm.width!==64||bm.height!==64)throw Error(`Cartridge must be 64×64 px, this image is ${bm.width}×${bm.height}.`);
+ if(bm.width!==64||bm.height!==64)throw Object.assign(Error(`Cartridge must be 64×64 px, this image is ${bm.width}×${bm.height}.`),{noSig:1});
  const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(bm,0,0);
  return parse(x.getImageData(0,0,64,64).data)}
 
-/* tile-set sheet images: 64x64, 8x8 tiles of 8x8 px; a pixel counts as set when opaque and lighter than 50% */
-function tilesetPixels(a){const d=new Uint8Array(64*64*4);a.glyphs.forEach((q,g)=>q.forEach((r,j)=>{for(let x=0;x<8;x++){const p=(((g>>3)*8+j)*64+(g&7)*8+x)*4,v=r>>(7-x)&1?255:0;d[p]=d[p+1]=d[p+2]=v;d[p+3]=255}}));return d}
+/* tile-set sheet images: 32x32, 4x4 glyph tiles of 8x8 px; a pixel counts as set when it is opaque and lighter than 50% */
+function tilesetPixels(a){const d=new Uint8Array(32*32*4);a.glyphs.forEach((q,g)=>q.forEach((r,j)=>{for(let x=0;x<8;x++){const p=(((g>>2)*8+j)*32+(g&3)*8+x)*4,v=r>>(7-x)&1?255:0;d[p]=d[p+1]=d[p+2]=v;d[p+3]=255}}));return d}
 async function loadTileset(f){let bm;try{bm=await createImageBitmap(f,{premultiplyAlpha:"none",colorSpaceConversion:"none"})}catch{throw Error("Could not decode this file as an image.")}
- if(bm.width!==64||bm.height!==64)throw Error(`Tile set must be 64×64 px (8×8 tiles of 8×8 px), this image is ${bm.width}×${bm.height}.`);
- const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(bm,0,0);const d=x.getImageData(0,0,64,64).data;
- return Array.from({length:64},(_,g)=>Array.from({length:8},(_,j)=>{let r=0;for(let i=0;i<8;i++){const p=(((g>>3)*8+j)*64+(g&7)*8+i)*4;r=r<<1|(d[p+3]>=128&&(d[p]*299+d[p+1]*587+d[p+2]*114)/1000>=128?1:0)}return r}))}
+ if(bm.width!==32||bm.height!==32)throw Error(`Tile set must be 32×32 px (4×4 tiles of 8×8 px), this image is ${bm.width}×${bm.height}.`);
+ const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(bm,0,0);const d=x.getImageData(0,0,32,32).data;
+ return Array.from({length:16},(_,g)=>Array.from({length:8},(_,j)=>{let r=0;for(let i=0;i<8;i++){const p=(((g>>2)*8+j)*32+(g&3)*8+i)*4;r=r<<1|(d[p+3]>=128&&(d[p]*299+d[p+1]*587+d[p+2]*114)/1000>=128?1:0)}return r}))}
 
 /* ---------- state, history ---------- */
-let art=def(),trans=false,undo=[],redo=[],lastKey="",lastT=0,showGrid=true,clip=null,gv=true,sel=null,g=null,mode="both";
-const brush={glyph:1,fg:2,bg:0,tool:"paint"},cur=()=>({glyph:brush.glyph,fg:brush.fg,bg:brush.bg});
+let art=def(),dsel=0,dDir=1,lay="tiles",trans=false,undo=[],redo=[],lastKey="",lastT=0,showGrid=true,clip=null,gv=true,sel=null,g=null,mode="both";
+const brush={glyph:1,fg:1,bg:0,tool:"paint"},cur=()=>({glyph:brush.glyph,fg:brush.fg,bg:brush.bg});
 const snap=()=>{undo.push(JSON.stringify(art));if(undo.length>200)undo.shift();redo=[];lastKey=""};
 const soft=k=>{const t=Date.now();if(k!==lastKey||t-lastT>1000)snap();lastKey=k;lastT=t};
 function doUndo(){commitSel();if(!undo.length)return;redo.push(JSON.stringify(art));art=JSON.parse(undo.pop());lastKey="";refresh(true)}
@@ -213,34 +226,38 @@ function drag(cv,n,down,move){let on=false,last=-1;
  cv.addEventListener("pointermove",e=>{if(!on)return;const[x,y]=cellAt(cv,e,n);if(y*n+x!==last){last=y*n+x;move(x,y)}});
  const end=()=>on=false;cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end)}
 function flood(i){const gk=c=>art.glyphs[c.glyph].join(),key=c=>mode==="char"?gk(c):mode==="colour"?c.fg+","+c.bg:gk(c)+","+c.fg+","+c.bg,t=key(art.map[i]);if(key(put(art.map[i],cur()))===t)return;const seen=new Set,st=[i];
- while(st.length){const k=st.pop();if(seen.has(k)||key(art.map[k])!==t)continue;seen.add(k);art.map[k]=put(art.map[k],cur());
+ while(st.length){const k=st.pop();if(seen.has(k)||key(art.map[k])!==t)continue;seen.add(k);art.map[k]=keepD(art.map[k],put(art.map[k],cur()));
   const x=k%8,y=k>>3;if(x>0)st.push(k-1);if(x<7)st.push(k+1);if(y>0)st.push(k-8);if(y<7)st.push(k+8)}}
 /* paint mode: char = glyph only, colour = fg+bg only, both = whole cell */
-const DEF={glyph:0,fg:2,bg:0};
+const DEF={glyph:0,fg:1,bg:0};
 function put(o,s){return mode==="char"?{...o,glyph:s.glyph}:mode==="colour"?{...o,fg:s.fg,bg:s.bg}:{...s}}
-const stamp=i=>art.map[i]=put(art.map[i],brush.tool==="erase"?DEF:cur());
+/* a new tile keeps the old tile's dither, but only where it is visible both before and after */
+const keepD=(o,n)=>({...n,d:cleanD(art,{...n,d:cleanD(art,o)})}),stamp=i=>art.map[i]=brush.tool==="erase"?put(art.map[i],DEF):keepD(art.map[i],put(art.map[i],cur()));
 /* Replace tool: the first tap defines what to replace (Char: the glyph; Colour: the colour of the tapped pixel, whether it is a tile's fg or bg; Both: the whole tile);
    dragging then swaps every touched tile that matches. Colour replaces with the foreground swatch, Char with the current glyph, Both with the current tile. */
 const gsame=(a,b)=>a===b||art.glyphs[a].every((r,k)=>r===art.glyphs[b][k]),same=(a,b)=>gsame(a.glyph,b.glyph)&&a.fg===b.fg&&a.bg===b.bg,
  repKey=(c,p)=>mode==="char"?{glyph:c.glyph}:mode==="colour"?{col:gp(art.glyphs[c.glyph],p[0],p[1])?c.fg:c.bg}:{...c};
 function repApply(i,k){const c=art.map[i];
- if(mode==="char"){if(gsame(c.glyph,k.glyph))art.map[i]={...c,glyph:brush.glyph}}
- else if(mode==="colour")art.map[i]={...c,fg:c.fg===k.col?brush.fg:c.fg,bg:c.bg===k.col?brush.fg:c.bg};
- else if(same(c,k))art.map[i]=cur()}
-/* choosing a tile keeps paint, fill and replace; only erase and pick fall back to paint */
-const tileTool=()=>{if(brush.tool==="erase"||brush.tool==="pick")brush.tool="paint"};
-function setTool(n){brush.tool=n;buildTools();if(n==="replace")say(mode==="char"?"Replace: tap a tile, then drag to turn every matching tile into the current glyph":mode==="colour"?"Replace: tap a pixel to choose its colour, then drag over tiles to turn that colour into the foreground colour":"Replace: tap a tile, then drag to turn every identical tile into the current tile")}
+ if(mode==="char"){if(gsame(c.glyph,k.glyph))art.map[i]=keepD(c,{...c,glyph:brush.glyph})}
+ else if(mode==="colour")art.map[i]=keepD(c,{...c,fg:c.fg===k.col?brush.fg:c.fg,bg:c.bg===k.col?brush.fg:c.bg});
+ else if(same(c,k))art.map[i]=keepD(c,cur())}
+/* choosing a tile switches to the tiles mode and keeps paint, fill and replace; erase and pick fall back to paint */
+const tileTool=()=>{if(brush.tool==="erase"||brush.tool==="pick")brush.tool="paint";lay="tiles"};
+function setTool(n){brush.tool=n;buildTools();refresh();if(n==="replace")say(lay==="dither"?"Replace: tap a quarter, then drag to step every quarter that has the same level":"Replace: tap a tile, then drag to turn every identical tile into the current tile")}
+function setLay(n){lay=n;refresh();if(n==="dither")say("Dither mode: Paint steps every quarter you touch, Fill steps a whole area, Replace steps quarters at the first one's level, Erase clears. + / − set the direction; right-click does the opposite")}
 const act=(x,y)=>{const i=y*8+x,t=brush.tool;
+ if(lay==="dither"){ditherTool(g.qd);return}
  if(t==="replace"){snap();g.rep=g.rep||repKey(art.map[i],g.pix||[0,0]);repApply(i,g.rep);draw();return}
  if(t==="pick"){const m=art.map[i];if(mode!=="colour")brush.glyph=m.glyph;if(mode!=="char"){brush.fg=m.fg;brush.bg=m.bg}brush.tool="paint";buildTools();refresh();return}
  snap();if(t==="fill")flood(i);else stamp(i);draw()};
 /* glyph transforms: gp = pixel at x,y; fromFn builds a new 8-row glyph from a (glyph,x,y)->bit function */
 const gp=(q,x,y)=>q[y]>>(7-x)&1,fromFn=(q,f)=>q.map((_,y)=>{let b=0;for(let x=0;x<8;x++)b=b<<1|f(q,x,y);return b}),
- rotF=(q,x,y)=>gp(q,y,7-x),GF={rot:rotF,fh:(q,x,y)=>gp(q,7-x,y),fv:(q,x,y)=>gp(q,x,7-y)};
+ rotF=(q,x,y)=>gp(q,7-y,x),GF={rot:rotF,fh:(q,x,y)=>gp(q,7-x,y),fv:(q,x,y)=>gp(q,x,7-y)};
 /* selection: a floating block of cells cut from the map; flat() shows the map with it merged in, commitSel() places it */
 function flat(){if(!sel)return art;const m=art.map.slice(),e=trans?art.glyphs.findIndex(q=>!q.some(r=>r)):-1;
  sel.cells.forEach((c,k)=>{const x=sel.x+k%sel.w,y=sel.y+(k/sel.w|0);if(c&&x>=0&&x<8&&y>=0&&y<8&&c.glyph!==e)m[y*8+x]=put(m[y*8+x],c)});return{...art,map:m}}
 function commitSel(){if(!sel)return;art.map=flat().map;sel=null;refresh()}
+const dmap=(k,d)=>{const b=n=>d>>n*2&3;return k==="rot"?b(1)|b(3)<<2|b(0)<<4|b(2)<<6:k==="fh"?b(1)|b(0)<<2|b(3)<<4|b(2)<<6:b(2)|b(3)<<2|b(0)<<4|b(1)<<6};
 /* a selection is a bounding box whose cells[] may hold null for unselected cells, so it can have any shape */
 const selCell=(x,y)=>{const i=x-sel.x,j=y-sel.y;return i>=0&&j>=0&&i<sel.w&&j<sel.h&&sel.cells[j*sel.w+i]};
 function addSel(x0,y0,w,h){snap();const nx=Math.min(sel.x,x0),ny=Math.min(sel.y,y0),nw=Math.max(sel.x+sel.w,x0+w)-nx,nh=Math.max(sel.y+sel.h,y0+h)-ny,cells=Array(nw*nh).fill(null);
@@ -266,24 +283,47 @@ function selOp(kind){if(!sel){if(kind==="inv"){[brush.fg,brush.bg]=[brush.bg,bru
   if(j<0){if(!free.length){say("No free glyph slot left for the transformed tiles",1);return}j=free.shift();add[j]=nb}
   m[c.glyph]=j}
  for(const j in add)art.glyphs[j]=add[j];
- const{w,h}=sel,C=sel.cells.map(c=>c&&{...c,glyph:m[c.glyph]}),at=(x,y)=>C[y*w+x],
-  f=kind==="rot"?(x,y)=>at(y,h-1-x):kind==="fh"?(x,y)=>at(w-1-x,y):(x,y)=>at(x,h-1-y),
+ const{w,h}=sel,C=sel.cells.map(c=>c&&{...c,glyph:m[c.glyph],d:dmap(kind,c.d|0)}),at=(x,y)=>C[y*w+x],
+  f=kind==="rot"?(x,y)=>at(w-1-y,x):kind==="fh"?(x,y)=>at(w-1-x,y):(x,y)=>at(x,h-1-y),
   nw=kind==="rot"?h:w,nh=kind==="rot"?w:h,cells=[];
  for(let y=0;y<nh;y++)for(let x=0;x<nw;x++)cells.push(f(x,y));
  if(kind==="rot"){sel.x+=Math.floor((w-h)/2);sel.y+=Math.floor((h-w)/2)}
  Object.assign(sel,{w:nw,h:nh,cells});sel.x=Math.min(7,Math.max(1-sel.w,sel.x));sel.y=Math.min(7,Math.max(1-sel.h,sel.y));refresh()}
+const quadOf=e=>{const r=bd.getBoundingClientRect(),f=(v,o,z)=>Math.min(15,Math.max(0,Math.floor((v-o)/z*16)));return[f(e.clientX,r.left,r.width),f(e.clientY,r.top,r.height)]},
+ qBit=(qx,qy)=>(qy&1)*2+(qx&1),qIdx=(qx,qy)=>(qy>>1)*8+(qx>>1),
+ getQuad=(qx,qy)=>(art.map[qIdx(qx,qy)].d|0)>>qBit(qx,qy)*2&3,
+ setQuad=(qx,qy,l)=>{const i=qIdx(qx,qy),c=art.map[i],sh=qBit(qx,qy)*2;art.map[i]={...c,d:((c.d|0)&~(3<<sh))|l<<sh}},
+ clampL=l=>Math.max(0,Math.min(3,l)), /* level 0 = off, 1-3 = 25, 50, 75% */
+ /* Dither mode. Paint: every quarter you touch steps one level (once per stroke). Fill: the connected area of quarters at the first quarter's level steps
+    one level (fully black quarters are walls). Replace: only quarters at the first quarter's level step. Erase: quarters go back to off.
+    + = more black (off, 25, 50, 75%), - = less; right-click reverses the direction for that stroke. Fully black quarters are never changed,
+    and an undo step is only made when something changes. */
+ applyLvl=(qx,qy,l)=>{const m=art.map[qIdx(qx,qy)];if(quadBlack(art,m,qBit(qx,qy))||getQuad(qx,qy)===l)return;if(!g.snapped){snap();g.snapped=true}setQuad(qx,qy,l)},
+ ditherApply=q=>{const id=q.join(),cur=getQuad(q[0],q[1]),t=brush.tool;
+  if(t==="erase")applyLvl(q[0],q[1],0);
+  else if(t==="replace"){if(cur===g.r0)applyLvl(q[0],q[1],g.rt)}
+  else if(!g.seen.has(id)){g.seen.add(id);applyLvl(q[0],q[1],clampL(cur+(g.rev?-dDir:dDir)))}},
+ ditherAct=q=>{g.snapped=false;g.r0=getQuad(q[0],q[1]);g.rt=clampL(g.r0+(g.rev?-dDir:dDir));g.seen=new Set;ditherApply(q);draw()},
+ ditherFill=q=>{g.snapped=false;const r0=getQuad(q[0],q[1]),rt=clampL(r0+(g.rev?-dDir:dDir));if(rt===r0||quadBlack(art,art.map[qIdx(q[0],q[1])],qBit(q[0],q[1])))return;
+  const seen=new Set([q.join()]),st=[q];while(st.length){const[x,y]=st.pop();applyLvl(x,y,rt);
+   for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,id=nx+","+ny;if(nx<0||ny<0||nx>15||ny>15||seen.has(id))continue;seen.add(id);
+    if(quadBlack(art,art.map[qIdx(nx,ny)],qBit(nx,ny))||getQuad(nx,ny)!==r0)continue;st.push([nx,ny])}}draw()},
+ ditherTool=q=>{if(brush.tool==="fill")ditherFill(q);else ditherAct(q)};
 /* board gestures: tap/drag paints; long-press then drag selects; drag inside a selection moves it; long-press then drag outside it adds an area (any shape); tap elsewhere places it */
 const bd=$("bd"),cellF=e=>{const r=bd.getBoundingClientRect();return[Math.floor((e.clientX-r.left)/r.width*8),Math.floor((e.clientY-r.top)/r.height*8)]},cl=v=>Math.min(7,Math.max(0,v));
 bd.addEventListener("contextmenu",e=>e.preventDefault());
 bd.addEventListener("pointerdown",e=>{e.preventDefault();bd.setPointerCapture(e.pointerId);const[fx,fy]=cellF(e),x=cl(fx),y=cl(fy);
- if(e.button===2){commitSel();snap();art.map[y*8+x]=put(art.map[y*8+x],DEF);g={m:"erase",l:x+","+y};draw();return}
+ if(e.button===2){commitSel();if(lay==="dither"){const q=quadOf(e);g={m:"dither",qd:q,ql:q.join(),rev:brush.tool!=="erase"};if(brush.tool==="fill"){ditherFill(q);g.m="none"}else ditherAct(q);return}
+  snap();art.map[y*8+x]=put(art.map[y*8+x],DEF);g={m:"erase",l:x+","+y};draw();return}
  if(sel){if(selCell(fx,fy))g={m:"move",dx:fx-sel.x,dy:fy-sel.y};else{const q=g={m:"wait2",x,y};q.t=setTimeout(()=>{q.m="add";q.x1=x;q.y1=y;navigator.vibrate&&navigator.vibrate(15);draw()},380)}return}
- const r=bd.getBoundingClientRect(),q=g={m:"wait",x,y,pix:[(e.clientX-r.left)/r.width*8-x,(e.clientY-r.top)/r.height*8-y].map(v=>Math.min(7,Math.max(0,Math.floor(v*8))))};q.t=setTimeout(()=>{q.m="select";q.x1=x;q.y1=y;navigator.vibrate&&navigator.vibrate(15);draw()},380)});
+ const r=bd.getBoundingClientRect(),q=g={m:"wait",x,y,qd:quadOf(e),pix:[(e.clientX-r.left)/r.width*8-x,(e.clientY-r.top)/r.height*8-y].map(v=>Math.min(7,Math.max(0,Math.floor(v*8))))};q.t=setTimeout(()=>{q.m="select";q.x1=x;q.y1=y;navigator.vibrate&&navigator.vibrate(15);draw()},380)});
 bd.addEventListener("pointermove",e=>{if(!g)return;const[fx,fy]=cellF(e),x=cl(fx),y=cl(fy);
  if(g.m==="wait2"&&(x!==g.x||y!==g.y)){clearTimeout(g.t);commitSel();g={m:"none"};return}
+ if(g.m==="wait"&&lay==="dither"&&brush.tool!=="fill"&&brush.tool!=="pick"){const q=quadOf(e);if(q[0]===g.qd[0]&&q[1]===g.qd[1])return;clearTimeout(g.t);ditherAct(g.qd);g.m="dither";g.ql=g.qd.join()}
  if(g.m==="wait"&&(x!==g.x||y!==g.y)){clearTimeout(g.t);if(brush.tool==="paint"||brush.tool==="erase"||brush.tool==="replace"){act(g.x,g.y);g.m="paint";g.l=g.x+","+g.y}else g.m="none"}
  if(g.m==="paint"){if(g.l!==x+","+y){g.l=x+","+y;if(brush.tool==="replace")repApply(y*8+x,g.rep);else stamp(y*8+x);draw()}}
  else if(g.m==="select"||g.m==="add"){g.x1=x;g.y1=y;draw()}
+ else if(g.m==="dither"){const q=quadOf(e),id=q.join();if(id!==g.ql){g.ql=id;ditherApply(q);draw()}}
  else if(g.m==="erase"){if(g.l!==x+","+y){g.l=x+","+y;art.map[y*8+x]=put(art.map[y*8+x],DEF);draw()}}
  else if(g.m==="move"){sel.x=Math.min(7,Math.max(1-sel.w,fx-g.dx));sel.y=Math.min(7,Math.max(1-sel.h,fy-g.dy));draw()}});
 const gEnd=e=>{if(!g)return;clearTimeout(g.t);
@@ -297,7 +337,12 @@ const gEnd=e=>{if(!g)return;clearTimeout(g.t);
 bd.addEventListener("pointerup",gEnd);bd.addEventListener("pointercancel",gEnd);
 function setPx(x,y){const r=art.glyphs[brush.glyph];r[y]=gv?r[y]|1<<(7-x):r[y]&~(1<<(7-x))&255;draw()}
 drag($("ge"),8,(x,y)=>{snap();gv=!(art.glyphs[brush.glyph][y]>>(7-x)&1);setPx(x,y)},setPx);
-for(const c of [$("gc"),$("go")])c.addEventListener("pointerdown",e=>{const[x,y]=cellAt(c,e,8);brush.glyph=y*8+x;tileTool();buildTools();refresh()});
+for(const c of [$("gc"),$("go")])c.addEventListener("pointerdown",e=>{const[x,y]=cellAt(c,e,4);brush.glyph=y*4+x;tileTool();buildTools();refresh()});
+/* dither patterns: their own strip and editor, separate from the glyphs */
+const syncDpat=()=>{$("dpat").value=famName(art.dither)};
+function setDPx(x,y){const r=art.dither[dsel];r[y]=gv?r[y]|1<<(7-x):r[y]&~(1<<(7-x))&255;draw();syncDpat()}
+drag($("de"),8,(x,y)=>{snap();gv=!(art.dither[dsel][y]>>(7-x)&1);setDPx(x,y)},setDPx);
+$("ds").addEventListener("pointerdown",e=>{dsel=cellAt($("ds"),e,3)[1];refresh()});
 
 /* ---------- UI ---------- */
 function draw(){autosave();const P=art.palette,fg=P[brush.fg],bg=P[brush.bg];
@@ -306,13 +351,16 @@ function draw(){autosave();const P=art.palette,fg=P[brush.fg],bg=P[brush.bg];
  if(r||sel)for(const[col,lw,d]of[["#000",6,[]],["#ffc233",3,[10,6]]]){X.strokeStyle=col;X.lineWidth=lw;X.setLineDash(d);
   if(r)X.strokeRect(r[0]*64+1.5,r[1]*64+1.5,r[2]*64-3,r[3]*64-3);if(sel){selPath(X);X.stroke()}}
  X.setLineDash([]);
- for(const id of ["gc","go"]){const c=$(id).getContext("2d");for(let i=0;i<64;i++)drawGlyph(c,art,i,fg,bg,(i%8)*32,(i>>3)*32,4);
-  lines(c,32,8,"rgba(255,255,255,.12)");c.strokeStyle="#ffc233";c.lineWidth=3;c.strokeRect((brush.glyph%8)*32+1.5,(brush.glyph>>3)*32+1.5,29,29)}
- const e=$("ge").getContext("2d");drawGlyph(e,art,brush.glyph,fg,bg,0,0,32);lines(e,32,8,"rgba(255,255,255,.18)");
+  for(const id of ["gc","go"]){const c=$(id).getContext("2d");for(let i=0;i<16;i++)drawGlyph(c,art,i,id==="go"?P[1]:fg,id==="go"?P[0]:bg,(i%4)*64,(i>>2)*64,8);
+  lines(c,64,4,"rgba(255,255,255,.12)");c.strokeStyle="#ffc233";c.lineWidth=3;c.strokeRect((brush.glyph%4)*64+1.5,(brush.glyph>>2)*64+1.5,61,61)}
+ const e=$("ge").getContext("2d");drawGlyph(e,art,brush.glyph,P[1],P[0],0,0,32);lines(e,32,8,"rgba(255,255,255,.18)");
+ const ds=$("ds").getContext("2d");art.dither.forEach((q,k)=>drawGlyph(ds,{glyphs:[q]},0,P[0],P[1],0,k*64,8));
+ ds.fillStyle="rgba(128,128,128,.5)";ds.fillRect(0,63,64,2);ds.fillRect(0,127,64,2);ds.strokeStyle="#d9480f";ds.lineWidth=3;ds.strokeRect(1.5,dsel*64+1.5,61,61);
+ const de=$("de").getContext("2d");drawGlyph(de,{glyphs:[art.dither[dsel]]},0,P[0],P[1],0,0,32);lines(de,32,8,"rgba(128,128,128,.45)");
  const b=$("bp");if(b)drawGlyph(b.getContext("2d"),art,brush.glyph,fg,bg,0,0,1)}
-const IC={paint:[3,7,46,20,104,116,240,192],fill:[126,129,189,66,126,122,122,60],replace:[246,243,241,240,7,143,207,111],pick:[6,15,63,30,44,84,160,192],erase:[12,30,63,95,142,132,72,48],grid:[255,146,146,255,146,146,255,146],text:[24,24,60,36,60,102,66,231],colour:[14,57,73,79,254,152,152,112],both:[24,24,56,32,54,111,79,230],rotate:[0,61,67,71,64,64,48,0],fliph:[0,36,102,231,231,102,36,0],flipv:[24,60,126,0,0,126,60,24],invert:[255,253,249,241,225,193,129,255],undo:[0,32,96,254,97,33,2,0],redo:[0,4,6,127,134,132,64,0],save:[252,218,219,195,255,193,193,255],load:[120,134,128,159,159,190,190,252],new:[116,118,112,126,126,126,126,126],del:[24,126,0,126,86,86,86,60],copy:[120,76,68,69,69,125,1,31],paste:[24,36,90,126,66,126,66,126],transparent:[56,68,130,170,130,130,170,214],stamp:[24,60,60,24,24,126,66,126],place:[24,24,24,126,60,24,0,126],download:[24,24,24,126,60,24,66,126],upload:[24,60,126,24,24,24,66,126],canvas:[126,129,165,141,159,191,129,126],workshop:[48,8,136,152,124,14,5,2]};
+const IC={paint:[3,7,46,20,104,116,240,192],fill:[126,129,189,66,126,122,122,60],replace:[246,243,241,240,7,143,207,111],pick:[6,15,63,30,44,84,160,192],erase:[12,30,63,95,142,132,72,48],grid:[255,146,146,255,146,146,255,146],text:[24,24,60,36,60,102,66,231],colour:[14,57,73,79,254,152,152,112],both:[24,24,60,32,54,111,79,230],rotate:[0,188,194,226,2,2,12,0],fliph:[0,36,102,231,231,102,36,0],flipv:[24,60,126,0,0,126,60,24],invert:[255,253,249,241,225,193,129,255],undo:[0,32,96,254,97,33,2,0],redo:[0,4,6,127,134,132,64,0],save:[252,218,219,195,255,193,193,255],load:[120,134,128,159,159,190,190,252],new:[116,118,112,126,126,126,126,126],del:[24,126,0,126,86,86,86,60],copy:[120,76,68,69,69,125,1,31],paste:[24,36,90,126,66,126,66,126],transparent:[56,68,130,170,130,130,170,214],stamp:[24,60,60,24,24,126,66,126],place:[24,24,24,126,60,24,0,126],download:[24,24,24,126,60,24,66,126],upload:[24,60,126,24,24,24,66,126],canvas:[126,129,165,141,159,191,129,126],workshop:[48,8,136,152,124,14,5,2],dither:[204,204,51,51,204,204,51,51],plus:[0,24,24,126,126,24,24,0],minus:[0,0,0,126,126,0,0,0]};
 /* 8x8 icons (one byte per row, MSB = leftmost pixel) drawn as crisp SVG in the text colour; the label lives in data-tip */
-const TIPS={paint:"Paint (1)",fill:"Fill (2)",replace:"Replace (3)",pick:"Pick (4)",erase:"Erase (5)",grid:"Grid (G)",rotate:"Rotate (R)",fliph:"Flip horizontally (H)",flipv:"Flip vertically (V)",invert:"Invert (I)",undo:"Undo (Ctrl+Z)",redo:"Redo (Ctrl+Y)",save:"Save (Ctrl+S)",load:"Load (Ctrl+O)",new:"New (Ctrl+N, twice)"};
+const TIPS={paint:"Paint (1)",fill:"Fill (2)",replace:"Replace (3)",erase:"Erase (4)",grid:"Grid (G)",rotate:"Rotate (R)",fliph:"Flip horizontally (H)",flipv:"Flip vertically (V)",invert:"Invert (I)",undo:"Undo (Ctrl+Z)",redo:"Redo (Ctrl+Y)",save:"Save (Ctrl+S)",load:"Load (Ctrl+O)",new:"New (Ctrl+N, twice)"};
 function svg(n){let d="";IC[n].forEach((r,y)=>{for(let x=0;x<8;){if(r>>(7-x)&1){let w=1;while(x+w<8&&r>>(7-x-w)&1)w++;d+="M"+x+" "+y+"h"+w+"v1h-"+w+"z";x+=w}else x++}});return'<svg class="ic" viewBox="0 0 8 8" aria-hidden="true"><path d="'+d+'"/></svg>'}
 function icon(b,n,tip){b.innerHTML=svg(n);b.dataset.tip=tip||b.dataset.tip||TIPS[n];b.setAttribute("aria-label",b.dataset.tip)}
 document.querySelectorAll("[data-ic]").forEach(b=>icon(b,b.dataset.ic));
@@ -330,27 +378,15 @@ document.addEventListener("click",e=>{if(lp){e.stopPropagation();e.preventDefaul
 document.addEventListener("contextmenu",e=>{if(tipBtn(e))e.preventDefault()});
 function buildTools(){const t=$("tools");t.innerHTML="";
  const add=(n,on,f)=>{const b=document.createElement("button");icon(b,n);b.className=on?"on":"";b.onclick=f;t.append(b)};
- ["paint","fill","replace","pick","erase"].forEach(n=>add(n,brush.tool===n,()=>setTool(n)));
+ ["paint","fill","replace","erase"].forEach(n=>add(n,brush.tool===n,()=>setTool(n)));
  add("grid",showGrid,()=>{showGrid=!showGrid;buildTools();draw()});
  draw()}
-function swatches(){for(const[id,k]of[["sf","fg"],["sb","bg"]]){const e=$(id);e.innerHTML="";
- art.palette.forEach((c,i)=>{const b=document.createElement("button");b.style.background=c;b.className=brush[k]===i?"s on":"s";b.setAttribute("aria-label",k+" colour "+(i+1));b.onclick=()=>{brush[k]=i;refresh()};e.append(b)})}}
-const pin=[];art.palette.forEach((c,i)=>{const l=document.createElement("label"),sw=document.createElement("button"),h=document.createElement("span");
- l.className="pc";sw.className="pcb";sw.style.background=c;l.append(sw,h);$("pal").append(l);pin.push([sw,h]);sw.onclick=()=>openPicker(i)});
-/* colour map: 8 greys, then 7 lightness steps of 8 hues; tap a tile to pick it */
-const PICK=(()=>{const o=[0,32,64,96,128,168,212,255].map(v=>"#"+v.toString(16).padStart(2,"0").repeat(3)),
- hsl=(h,s,l)=>{const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return"#"+[f(0),f(8),f(4)].map(v=>Math.round(v*255).toString(16).padStart(2,"0")).join("")};
- for(const l of[.85,.74,.63,.52,.41,.30,.19])for(const h of[0,28,52,120,174,214,270,322])o.push(hsl(h,.8,l));return o})();
-PICK.forEach(c=>{const b=document.createElement("button");b.className="cc";b.style.background=c;b.dataset.c=c;b.setAttribute("aria-label",c);$("cgrid").append(b)});
-let cpi=-1;
-function openPicker(i){cpi=i;const cur=art.palette[i].toLowerCase();$("cgrid").querySelectorAll("button").forEach(b=>b.className=b.dataset.c===cur?"cc on":"cc");$("cp").hidden=false}
-function setPal(i,c){soft("p"+i);art.palette[i]=c;pin[i][0].style.background=c;pin[i][1].textContent=c;$("cp").hidden=true;refresh()}
-$("cgrid").onclick=e=>{const b=e.target.closest("button");if(b)setPal(cpi,b.dataset.c)};
-$("cx").onclick=()=>$("cp").hidden=true;$("cp").onclick=e=>{if(e.target===$("cp"))$("cp").hidden=true};
+$("mlt").onclick=()=>setLay("tiles");$("mld").onclick=()=>setLay("dither");$("dup").onclick=()=>{dDir=1;refresh()};$("ddn").onclick=()=>{dDir=-1;refresh()};
+$("dpat").onchange=e=>{const n=e.target.value;if(FAMS[n]){snap();art.dither=famTiles(n)}refresh()};
 MF.forEach(k=>{const l=document.createElement("label"),i=document.createElement("input");l.className="mf";l.append(k[0].toUpperCase()+k.slice(1),i);
  i.id="m_"+k;i.type=k==="date"?"date":"text";i.oninput=()=>{soft("m"+k);art.metadata[k]=i.value;autosave()};$("meta").append(l)});
-function refresh(sync){swatches();draw();$("un").disabled=!undo.length;$("re").disabled=!redo.length;$("gn").textContent="#"+brush.glyph;$("selbar").hidden=!sel;$("selt").className=trans?"on":"";document.querySelectorAll("#modes [data-m]").forEach(b=>b.className=b.dataset.m===mode?"on":"");$("sf").style.opacity=$("sb").style.opacity=mode==="char"?.4:1;$("gc").style.opacity=mode==="colour"?.4:1;
- if(sync){pin.forEach(([i,h],k)=>{i.style.background=art.palette[k];h.textContent=art.palette[k]});MF.forEach(k=>$("m_"+k).value=art.metadata[k])}}
+function refresh(sync){draw();$("un").disabled=!undo.length;$("re").disabled=!redo.length;$("gn").textContent="#"+brush.glyph;$("dn").textContent=[25,50,75][dsel]+"%";$("dg").hidden=lay!=="dither";$("mlt").className=lay==="tiles"?"on":"";$("mld").className=lay==="dither"?"on":"";$("dup").className=dDir>0?"on":"";$("ddn").className=dDir<0?"on":"";syncDpat();$("selbar").hidden=!sel;$("selt").className=trans?"on":"";
+ if(sync){MF.forEach(k=>$("m_"+k).value=art.metadata[k])}}
 function tab(w){$("vC").classList.toggle("on",!w);$("vW").classList.toggle("on",w);$("tC").className=w?"":"on";$("tW").className=w?"on":"";refresh()}
 $("grot").onclick=()=>{snap();art.glyphs[brush.glyph]=fromFn(art.glyphs[brush.glyph],rotF);refresh()};
 let nwT,nwOn=false;$("nw").onclick=()=>{const b=$("nw");
@@ -361,7 +397,6 @@ $("selst").onclick=()=>{if(!sel)return;snap();art.map=flat().map;refresh();say("
 $("selt").onclick=()=>{trans=!trans;const e=art.glyphs.findIndex(q=>!q.some(r=>r));refresh();say(trans?(e<0?"Transparent on, but no empty glyph exists":"Transparent: glyph #"+e+" no longer covers tiles"):"Transparent off")};
 function delSel(){if(!sel)return;sel=null;refresh();say("Selection deleted")}
 $("seldel").onclick=delSel;
-document.querySelectorAll("#modes [data-m]").forEach(b=>b.onclick=()=>{mode=b.dataset.m;refresh()});
 $("tC").onclick=()=>tab(0);$("tW").onclick=()=>tab(1);$("un").onclick=doUndo;$("re").onclick=doRedo;
 for(const k of["fh","fv"])$("g"+k).onclick=()=>{snap();art.glyphs[brush.glyph]=fromFn(art.glyphs[brush.glyph],GF[k]);refresh()};
 $("gcl").onclick=()=>{snap();art.glyphs[brush.glyph]=Array(8).fill(0);refresh()};
@@ -372,7 +407,7 @@ async function save(blob,name){const d=window.claude&&claude.use?await claude.us
  if(d)await d.save({filename:name,data:blob});else{const l=document.createElement("a");l.href=URL.createObjectURL(blob);l.download=name;l.click();setTimeout(()=>URL.revokeObjectURL(l.href),5000)}say("Saved "+name)}
 const fname=x=>(art.metadata.title||"untitled").replace(/[^\w-]+/g,"_")+x,saveErr=e=>say(e.code==="declined"?"Save cancelled":e.message,1);
 $("ex").onclick=async()=>{try{await save(toPNG(flat()),fname(".tile.png"))}catch(e){saveErr(e)}};
-$("tse").onclick=async()=>{try{await save(encodePNG(tilesetPixels(art)),fname(".tileset.png"))}catch(e){saveErr(e)}};
+$("tse").onclick=async()=>{try{await save(encodePNG(tilesetPixels(art),32),fname(".tileset.png"))}catch(e){saveErr(e)}};
 $("tsi").onclick=()=>$("tsf").click();
 $("tsf").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const g=await loadTileset(f);snap();art.glyphs=g;refresh();say("Tile set imported")}catch(x){say(x.message,1)}};
 $("im").onclick=()=>$("fi").click();
@@ -385,10 +420,8 @@ let sclip=null,ptr=[0,0];
 $("bd").addEventListener("pointermove",e=>{const[x,y]=cellF(e);ptr=[cl(x),cl(y)]});
 function copySel(){if(!sel)return;sclip={w:sel.w,h:sel.h,cells:sel.cells.map(c=>c&&{...c})};say("Selection copied")}
 function pasteSel(){if(!sclip){say("Nothing copied yet",1);return}commitSel();snap();sel={x:Math.min(ptr[0],8-sclip.w),y:Math.min(ptr[1],8-sclip.h),w:sclip.w,h:sclip.h,cells:sclip.cells.map(c=>c&&{...c})};refresh();say("Pasted: drag to move, P to place")}
-const MODES={char:"colour",colour:"both",both:"char"};
 addEventListener("keydown",e=>{
  const t=e.target;if(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable)return;
- if(!$("cp").hidden){if(e.key==="Escape"){e.preventDefault();$("cp").hidden=true}return}
  const mod=e.ctrlKey||e.metaKey,k=e.key.toLowerCase(),c=e.code,ws=$("vW").classList.contains("on"),
   go=f=>{e.preventDefault();f()},click=id=>go(()=>$(id).click());
  if(e.repeat&&!(mod&&(k==="z"||k==="y"))&&!/^Key[WASD]$/.test(c))return;
@@ -402,31 +435,35 @@ addEventListener("keydown",e=>{
   return}
  if(!ws&&sel){if(k==="s")return click("selst");if(k==="p")return click("selok")}
  const W={KeyW:[0,-1],KeyA:[-1,0],KeyS:[0,1],KeyD:[1,0]}[c];
- if(W){const x=(brush.glyph&7)+W[0],y=(brush.glyph>>3)+W[1];return go(()=>{brush.glyph=((y+8)%8)*8+(x+8)%8;tileTool();buildTools();refresh()})}
- if(k==="f"||k==="b"){const q=k==="f"?"fg":"bg",n=art.palette.length;return go(()=>{brush[q]=(brush[q]+(e.shiftKey?n-1:1))%n;refresh()})} /* Shift reverses */
+ if(W){const x=(brush.glyph&3)+W[0],y=(brush.glyph>>2)+W[1];return go(()=>{brush.glyph=((y+4)%4)*4+(x+4)%4;tileTool();buildTools();refresh()})}
  const del=e.key==="Delete"||e.key==="Backspace";
  if("rhvi".includes(k)&&k.length===1)return go(()=>ws?$({r:"grot",h:"gfh",v:"gfv",i:"ginv"}[k]).click():selOp({r:"rot",h:"fh",v:"fv",i:"inv"}[k]));
  if(ws){if(k==="c")return click("gcp");if(k==="p")return click("gps");if(del)return click("gcl");return}
  if(k==="g")return go(()=>{showGrid=!showGrid;buildTools();draw()});
- const n="12345".indexOf(e.key);if(n>=0&&e.key.length===1)return go(()=>setTool(["paint","fill","replace","pick","erase"][n]));
- if(k==="m")return go(()=>{mode=MODES[mode];refresh();say("Mode: "+mode)});
+ if(k==="m")return go(()=>setLay(lay==="tiles"?"dither":"tiles"));
+ const n="1234".indexOf(e.key);if(n>=0&&e.key.length===1)return go(()=>setTool(["paint","fill","replace","erase"][n]));
  if(!sel)return;
  if(k==="c")return go(copySel);if(k==="t")return click("selt");if(del)return go(delSel)});
 /* ---------- autosave: the whole working state goes to localStorage a moment after every change and when the page is hidden; undo history is not kept ---------- */
-const KEY="tilecart:autosave:1",TOOLS=["paint","fill","replace","pick","erase"],MODE_NAMES=["char","colour","both"];
+const KEY="tilecart:autosave:2",TOOLS=["paint","fill","replace","erase"];
 let asT,asWarned=false;
 function autosave(){clearTimeout(asT);asT=setTimeout(saveState,400)}
-function saveState(){clearTimeout(asT);try{localStorage.setItem(KEY,JSON.stringify({v:1,art,brush:{...brush},mode,showGrid,trans,sel,clip,sclip,w:$("vW").classList.contains("on")}))}catch(e){if(!asWarned){asWarned=true;say("Autosave is unavailable in this browser",1)}}}
-const okI=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi,okC=c=>!!c&&okI(c.glyph,0,63)&&okI(c.fg,0,2)&&okI(c.bg,0,2),okG=q=>Array.isArray(q)&&q.length===8&&q.every(r=>okI(r,0,255)),
- okS=z=>!!z&&okI(z.w,1,8)&&okI(z.h,1,8)&&Array.isArray(z.cells)&&z.cells.length===z.w*z.h&&z.cells.every(c=>c===null||okC(c)),cp=c=>c&&{glyph:c.glyph,fg:c.fg,bg:c.bg};
-function restoreState(){try{const st=JSON.parse(localStorage.getItem(KEY)),a=st&&st.art;if(!st||st.v!==1||!a)return false;
- if(!(Array.isArray(a.palette)&&a.palette.length===3&&a.palette.every(c=>/^#[0-9a-f]{6}$/i.test(c))&&Array.isArray(a.glyphs)&&a.glyphs.length===64&&a.glyphs.every(okG)&&Array.isArray(a.map)&&a.map.length===64&&a.map.every(okC)&&a.metadata&&typeof a.metadata==="object"))return false;
+function saveState(){clearTimeout(asT);try{localStorage.setItem(KEY,JSON.stringify({v:4,art,dDir,lay,brush:{...brush},mode,showGrid,trans,sel,clip,sclip,w:$("vW").classList.contains("on")}))}catch(e){if(!asWarned){asWarned=true;say("Autosave is unavailable in this browser",1)}}}
+/* saves from the 1-bit-per-quarter dither (v1) read as the 50% level */
+let up1=d=>d;
+const okI=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi,okC=c=>!!c&&okI(c.glyph,0,15)&&okI(c.fg,0,1)&&okI(c.bg,0,1)&&(c.d===undefined||okI(c.d,0,255)),okG=q=>Array.isArray(q)&&q.length===8&&q.every(r=>okI(r,0,255)),
+ okS=z=>!!z&&okI(z.w,1,8)&&okI(z.h,1,8)&&Array.isArray(z.cells)&&z.cells.length===z.w*z.h&&z.cells.every(c=>c===null||okC(c)),cp=c=>c&&{glyph:c.glyph,fg:c.fg,bg:c.bg,d:up1(c.d|0)};
+function restoreState(){try{const st=JSON.parse(localStorage.getItem(KEY)),a=st&&st.art;if(!st||![1,2,3,4].includes(st.v)||!a)return false;
+ if(!(Array.isArray(a.glyphs)&&a.glyphs.length===16&&a.glyphs.every(okG)&&Array.isArray(a.map)&&a.map.length===64&&a.map.every(okC)&&a.metadata&&typeof a.metadata==="object"))return false;
  const md={};MF.forEach(k=>md[k]=typeof a.metadata[k]==="string"?a.metadata[k].slice(0,200):"");
- art={...def(),palette:a.palette.map(c=>c.toLowerCase()),glyphs:a.glyphs.map(q=>[...q]),map:a.map.map(cp),metadata:md};
- const b=st.brush||{};if(okI(b.glyph,0,63))brush.glyph=b.glyph;if(okI(b.fg,0,2))brush.fg=b.fg;if(okI(b.bg,0,2))brush.bg=b.bg;if(TOOLS.includes(b.tool))brush.tool=b.tool;
- if(MODE_NAMES.includes(st.mode))mode=st.mode;if(typeof st.showGrid==="boolean")showGrid=st.showGrid;if(typeof st.trans==="boolean")trans=st.trans;
+ up1=st.v===1?(b4=>(b4&1)<<1|(b4>>1&1)<<3|(b4>>2&1)<<5|(b4>>3&1)<<7):(d=>d);
+ art={...def(),glyphs:a.glyphs.map(q=>[...q]),map:a.map.map(cp),metadata:md,dither:Array.isArray(a.dither)&&a.dither.length===3&&a.dither.every(okG)?a.dither.map(q=>[...q]):famTiles("Checker")};
+ art.map.forEach(m=>{m.d=cleanD(art,m)});
+ if(st.v>=3){if(st.dDir===1||st.dDir===-1)dDir=st.dDir;}if(st.v>=4&&(st.lay==="tiles"||st.lay==="dither"))lay=st.lay;
+ const b=st.brush||{};if(okI(b.glyph,0,15))brush.glyph=b.glyph;if(okI(b.fg,0,1))brush.fg=b.fg;if(okI(b.bg,0,1))brush.bg=b.bg;if(TOOLS.includes(b.tool))brush.tool=b.tool;
+ if(typeof st.showGrid==="boolean")showGrid=st.showGrid;if(typeof st.trans==="boolean")trans=st.trans;
  clip=okG(st.clip)?[...st.clip]:null;sclip=okS(st.sclip)?{w:st.sclip.w,h:st.sclip.h,cells:st.sclip.cells.map(cp)}:null;
- const z=st.sel;sel=okS(z)&&okI(z.x,-8,8)&&okI(z.y,-8,8)?{x:z.x,y:z.y,w:z.w,h:z.h,cells:z.cells.map(cp)}:null;
+ const z=st.sel;sel=okS(z)&&okI(z.x,-8,8)&&okI(z.y,-8,8)?{x:z.x,y:z.y,w:z.w,h:z.h,cells:z.cells.map(cp)}:null;up1=d=>d;
  return !!st.w}catch(e){return false}}
 addEventListener("pagehide",saveState);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveState()});
 const startW=restoreState();
