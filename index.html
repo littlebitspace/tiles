@@ -269,21 +269,25 @@ function selPath(X){X.beginPath();const{x,y,w,h,cells}=sel,at=(i,j)=>i>=0&&j>=0&
   if(!at(i,j-1)){X.moveTo(px,py+1.5);X.lineTo(px+64,py+1.5)}if(!at(i,j+1)){X.moveTo(px,py+62.5);X.lineTo(px+64,py+62.5)}
   if(!at(i-1,j)){X.moveTo(px+1.5,py);X.lineTo(px+1.5,py+64)}if(!at(i+1,j)){X.moveTo(px+62.5,py);X.lineTo(px+62.5,py+64)}}}
 /* no selection: transform the brush glyph; reuse an identical glyph or a free slot, so tiles already on the map are untouched */
-function brushOp(kind){const nb=fromFn(art.glyphs[brush.glyph],GF[kind]);let j=art.glyphs.findIndex(q=>q.every((r,k)=>r===nb[k]));
- if(j<0){const used=new Set([brush.glyph,...art.map.map(c=>c.glyph)]);j=art.glyphs.findIndex((q,i)=>i&&!used.has(i)&&!q.some(r=>r));
-  if(j<0){say("No free glyph slot left for the transformed tile",1);return}snap();art.glyphs[j]=nb}
- brush.glyph=j;refresh()}
+/* A transformed glyph is looked up before any slot is used: 1) an identical glyph, 2) the exact inverse of a glyph (same glyph with fg and bg swapped looks identical),
+   3) a blank slot that nothing uses. Only when all of that fails is there an error. */
+function findGlyph(nb){let j=art.glyphs.findIndex(q=>q.every((r,k)=>r===nb[k]));if(j>=0)return{j,swap:false};
+ j=art.glyphs.findIndex(q=>q.every((r,k)=>r===(~nb[k]&255)));return j>=0?{j,swap:true}:null}
+function brushOp(kind){const nb=fromFn(art.glyphs[brush.glyph],GF[kind]),hit=findGlyph(nb);
+ if(hit){brush.glyph=hit.j;if(hit.swap)[brush.fg,brush.bg]=[brush.bg,brush.fg];refresh();return}
+ const used=new Set([brush.glyph,...art.map.map(c=>c.glyph)]),j=art.glyphs.findIndex((q,i)=>i&&!used.has(i)&&!q.some(r=>r));
+ if(j<0){say("No free glyph slot left for the transformed tile",1);return}snap();art.glyphs[j]=nb;brush.glyph=j;refresh()}
 function selOp(kind){if(!sel){if(kind==="inv"){[brush.fg,brush.bg]=[brush.bg,brush.fg];refresh()}else brushOp(kind);return}
  if(kind==="inv"){sel.cells=sel.cells.map(c=>c&&{...c,fg:c.bg,bg:c.fg});draw();return}
- /* transformed glyphs reuse an identical existing glyph, else a blank glyph slot that nothing uses */
+ /* transformed glyphs reuse an identical glyph, else the inverse of one (colours swapped on that cell), else a blank glyph slot that nothing uses */
  const used=new Set([brush.glyph,...art.map.map(c=>c.glyph),...sel.cells.filter(Boolean).map(c=>c.glyph)]),
   free=art.glyphs.map((_,i)=>i).filter(i=>i&&!used.has(i)&&!art.glyphs[i].some(r=>r)),m={},add={};
  for(const c of sel.cells){if(!c||c.glyph in m)continue;const nb=fromFn(art.glyphs[c.glyph],GF[kind]);
-  let j=art.glyphs.findIndex(q=>q.every((r,k)=>r===nb[k]));
-  if(j<0){if(!free.length){say("No free glyph slot left for the transformed tiles",1);return}j=free.shift();add[j]=nb}
-  m[c.glyph]=j}
+  let hit=findGlyph(nb);
+  if(!hit){if(!free.length){say("No free glyph slot left for the transformed tiles",1);return}const j=free.shift();add[j]=nb;hit={j,swap:false}}
+  m[c.glyph]=hit}
  for(const j in add)art.glyphs[j]=add[j];
- const{w,h}=sel,C=sel.cells.map(c=>c&&{...c,glyph:m[c.glyph],d:dmap(kind,c.d|0)}),at=(x,y)=>C[y*w+x],
+ const{w,h}=sel,C=sel.cells.map(c=>{if(!c)return c;const t=m[c.glyph];return{...c,glyph:t.j,fg:t.swap?c.bg:c.fg,bg:t.swap?c.fg:c.bg,d:dmap(kind,c.d|0)}}),at=(x,y)=>C[y*w+x],
   f=kind==="rot"?(x,y)=>at(w-1-y,x):kind==="fh"?(x,y)=>at(w-1-x,y):(x,y)=>at(x,h-1-y),
   nw=kind==="rot"?h:w,nh=kind==="rot"?w:h,cells=[];
  for(let y=0;y<nh;y++)for(let x=0;x<nw;x++)cells.push(f(x,y));
